@@ -77,6 +77,8 @@ def test():
     missing_ids = set()
     pred_filenames = []
 
+    print(f'----------args.pred_path: {args.pred_path}----------')
+
     for root, dirnames, filenames in os.walk(args.pred_path):
         for pred_filename in fnmatch.filter(filenames, '*.png'):
             if 'cmap' in pred_filename or 'gt' in pred_filename:

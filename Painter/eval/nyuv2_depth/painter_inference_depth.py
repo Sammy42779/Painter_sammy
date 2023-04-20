@@ -20,7 +20,9 @@ import tqdm
 import matplotlib.pyplot as plt
 from PIL import Image
 
-sys.path.append('.')
+## change based on the server
+## 108: /ssd1/; 110: /hhd3/
+sys.path.append('/ssd1/ld/ICCV2023/Painter_sammy/Painter')
 import models_painter
 
 
@@ -100,16 +102,18 @@ if __name__ == '__main__':
     device = torch.device("cuda")
     model_painter.to(device)
 
-    dst_dir = os.path.join('models_inference', ckpt_dir,
+    ## ## change based on the server
+    ## 108: /ssd1/; 110: /hhd3/
+    dst_dir = os.path.join('/hhd3/ld/data/nyu_depth_v2/'
                            "nyuv2_depth_inference_{}_{}/".format(ckpt_file, args.prompt))
-    print(dst_dir)
+    print(f'----------dst_dir: {dst_dir}----------')
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
 
-    img_src_dir = "datasets/nyu_depth_v2/official_splits/test/"
+    img_src_dir = "/hhd3/ld/data/nyu_depth_v2/official_splits/test/"
     img_path_list = glob.glob(img_src_dir + "/*/rgb*g")
-    img2_path = "datasets/nyu_depth_v2/sync/{}.jpg".format(args.prompt)
-    tgt_path = "datasets/nyu_depth_v2/sync/{}.png".format(args.prompt.replace('rgb', 'sync_depth'))
+    img2_path = "/hhd3/ld/data/nyu_depth_v2/sync/{}.jpg".format(args.prompt)
+    tgt_path = "/hhd3/ld/data/nyu_depth_v2/sync/{}.png".format(args.prompt.replace('rgb', 'sync_depth'))
     tgt2_path = tgt_path
 
     res, hres = args.input_size, args.input_size

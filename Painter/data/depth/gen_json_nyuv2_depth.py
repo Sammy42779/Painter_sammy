@@ -14,12 +14,19 @@ import tqdm
 import argparse
 
 
+server_id = 110
+if server_id == 110:
+    data_dir = '/hhd3/ld/data/nyu_depth_v2'
+elif server_id == 108:
+    data_dir = '/data1/ld/data/nyu_depth_v2'
+
+
 def get_args_parser():
     parser = argparse.ArgumentParser('NYU Depth V2 preparation', add_help=False)
     parser.add_argument('--split', type=str, help='dataset split', 
                         choices=['sync', 'test'], required=True)
     parser.add_argument('--output_dir', type=str, help='path to output dir', 
-                        default='datasets/nyu_depth_v2')
+                        default=data_dir)
     return parser.parse_args()
 
 
@@ -35,7 +42,7 @@ if __name__ == '__main__':
     output_dict = []
     save_path = os.path.join(args.output_dir, "nyuv2_{}_image_depth.json".format(args.split))
 
-    src_dir = os.path.join("datasets/nyu_depth_v2", split_dir)
+    src_dir = os.path.join(data_dir, split_dir)
     image_path_list = glob.glob(src_dir + "/*/rgb_*.jpg")
 
     for image_path in tqdm.tqdm(image_path_list):
