@@ -105,7 +105,7 @@ if __name__ == '__main__':
     model_painter.to(device)
 
     ## ## change based on the server
-    ## 108: /ssd1/; 110: /hhd3/
+    ## 108: /data1/; 110: /hhd3/
     dst_dir = os.path.join('/hhd3/ld/data/nyu_depth_v2/'
                            "nyuv2_depth_inference_{}_{}/".format(ckpt_file, args.prompt))
     print(f'----------dst_dir: {dst_dir}----------')
