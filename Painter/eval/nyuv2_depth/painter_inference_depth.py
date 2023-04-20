@@ -20,8 +20,10 @@ import tqdm
 import matplotlib.pyplot as plt
 from PIL import Image
 
-## change based on the server
-## 108: /ssd1/; 110: /hhd3/
+## change sys path_dir based on the server 修改当前Painter路径，不是数据集路径
+## 108: '/ssd1/ld/ICCV2023/Painter_sammy/Painter'
+## 110: '/ssd3/ld/sammy2023/Painter_sammy/Painter'
+# sys.path.append('/ssd1/ld/ICCV2023/Painter_sammy/Painter')
 sys.path.append('/ssd1/ld/ICCV2023/Painter_sammy/Painter')
 import models_painter
 
