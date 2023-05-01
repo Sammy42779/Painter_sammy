@@ -218,11 +218,13 @@ if __name__ == "__main__":
     # define pred paths
     ckpt_file = args.ckpt_file
     work_dir = args.work_dir
-    pred_dir_inst = os.path.join(work_dir, 'pano_inst_inference_{}_{}_size{}'.format(
-        ckpt_file, args.prompt, args.input_size))
-    pred_dir_semseg = os.path.join(work_dir, "pano_semseg_inference_{}_{}_size{}".format(
-        ckpt_file, args.prompt, args.input_size))
-    gt_file = "datasets/coco/annotations/instances_val2017.json"
+    # pred_dir_inst = os.path.join(work_dir, 'pano_inst_inference_{}_{}_size{}'.format(
+    #     ckpt_file, args.prompt, args.input_size))
+    pred_dir_inst = '/hhd3/ld/data/COCO2017/pano_inst_inference_eval'
+    # pred_dir_semseg = os.path.join(work_dir, "pano_semseg_inference_{}_{}_size{}".format(
+    #     ckpt_file, args.prompt, args.input_size))
+    pred_dir_semseg = '/hhd3/ld/data/COCO2017/pano_semseg_inference_eval'
+    gt_file = "/hhd3/ld/data/COCO2017/annotations/instances_val2017.json"
 
     print(pred_dir_inst)
     print(pred_dir_semseg)

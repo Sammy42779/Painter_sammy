@@ -13,7 +13,7 @@ python -m torch.distributed.launch \
     --node_rank=$NODE_RANK \
     --master_addr=$MASTER_ADDR \
     --nproc_per_node=$GPUS \
-    --master_port=$PORT \
+    --master_port=1999 \
     $(dirname "$0")/train.py \
     $CONFIG \
     --seed 0 \

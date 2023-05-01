@@ -1,5 +1,8 @@
 # !/bin/bash
 
+# 单卡31228M 并行跑也是这么多显存, 但是运行时间会变少
+# 5000 val images
+
 set -x
 
 NUM_GPUS=1
@@ -17,23 +20,1640 @@ WORK_DIR="/hhd3/ld/data/COCO2017/eval"
 
 
 # inference
-CUDA_VISIBLE_DEVICES=2 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
- eval/coco_panoptic/painter_inference_pano_semseg.py \
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
  --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
  --input_size ${SIZE}
 
-CUDA_VISIBLE_DEVICES=2 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
  eval/coco_panoptic/painter_inference_pano_inst.py \
  --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
  --input_size ${SIZE}
 
-# postprocessing and eval
-CUDA_VISIBLE_DEVICES=2 python \
-  eval/coco_panoptic/COCOInstSegEvaluatorCustom.py \
-  --work_dir ${WORK_DIR} --ckpt_file ${CKPT_FILE} \
-  --dist_thr ${DIST_THR} --prompt ${PROMPT} --input_size ${SIZE}
 
-CUDA_VISIBLE_DEVICES=2 python \
-  eval/coco_panoptic/COCOPanoEvaluatorCustom.py \
-  --work_dir ${WORK_DIR} --ckpt_file ${CKPT_FILE} \
-  --dist_thr ${DIST_THR} --prompt ${PROMPT} --input_size ${SIZE}
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+  # inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+  # inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+  # inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+  # inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+  # inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+# inference
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_semseg_cuda.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS --master_port=29504 --use_env \
+ eval/coco_panoptic/painter_inference_pano_inst.py \
+ --ckpt_path ${CKPT_PATH} --model ${MODEL} --prompt ${PROMPT} \
+ --input_size ${SIZE}
+
+
+
+
+
+
+
+
+
+

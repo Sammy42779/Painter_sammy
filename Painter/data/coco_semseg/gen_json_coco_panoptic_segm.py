@@ -19,15 +19,15 @@ def get_args_parser():
     parser.add_argument('--split', type=str, help='dataset split', 
                         choices=['train2017', 'val2017'], required=True)
     parser.add_argument('--output_dir', type=str, help='path to output dir', 
-                        default='datasets/coco/pano_sem_seg/')
+                        default='/hhd3/ld/data/COCO2017/pano_sem_seg/')
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = get_args_parser()
 
-    image_dir = "datasets/coco/{}/".format(args.split)
-    panoptic_dir = 'datasets/coco/pano_sem_seg/panoptic_segm_{}_with_color/'.format(args.split)
+    image_dir = "/hhd3/ld/data/COCO2017/{}/".format(args.split)
+    panoptic_dir = '/hhd3/ld/data/COCO2017/pano_sem_seg/panoptic_segm_{}_with_color/'.format(args.split)
     save_path = os.path.join(args.output_dir, "coco_{}_image_panoptic_sem_seg.json".format(args.split))
     print(save_path)
 

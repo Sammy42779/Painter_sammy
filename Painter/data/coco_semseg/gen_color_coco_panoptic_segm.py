@@ -70,7 +70,7 @@ def get_args_parser():
     parser.add_argument('--split', type=str, help='dataset split', 
                         choices=['train2017', 'val2017'], required=True)
     parser.add_argument('--output_dir', type=str, help='path to output dir', 
-                        default='datasets/coco/pano_sem_seg')
+                        default='/hhd3/ld/data/COCO2017/pano_sem_seg')
     return parser.parse_args()
 
 
@@ -79,9 +79,9 @@ if __name__ == '__main__':
     split = args.split
     channelsep = 7
 
-    json_file = 'datasets/coco/annotations/panoptic_{}.json'.format(split)
-    segmentations_folder = 'datasets/coco/annotations/panoptic_{}'.format(split)
-    img_folder = 'datasets/coco/{}'.format(split)
+    json_file = '/hhd3/ld/data/COCO2017/annotations/panoptic_{}.json'.format(split)
+    segmentations_folder = '/hhd3/ld/data/COCO2017/annotations/panoptic_{}'.format(split)
+    img_folder = '/hhd3/ld/data/COCO2017/{}'.format(split)
     panoptic_coco_categories = 'data/panoptic_coco_categories.json'
     output_dir = os.path.join(args.output_dir, 'panoptic_segm_{}_with_color'.format(split))
     print(output_dir)

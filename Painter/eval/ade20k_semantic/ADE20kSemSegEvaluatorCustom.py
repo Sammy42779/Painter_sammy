@@ -23,7 +23,7 @@ except:
 
 def get_args_parser():
     parser = argparse.ArgumentParser('ADE20k semantic segmentation', add_help=False)
-    parser.add_argument('--pred_dir', type=str, help='dir to ckpt', required=True)
+    parser.add_argument('--pred_dir', type=str, help='dir to ckpt', required=False)
     parser.add_argument('--dist_type', type=str, help='color type',
                         default='abs', choices=['abs', 'square', 'mean'])
     parser.add_argument('--suffix', type=str, help='model epochs',
@@ -145,9 +145,13 @@ if __name__ == '__main__':
     args = get_args_parser()
     dataset_name = 'ade20k_sem_seg_val'
     pred_dir = args.pred_dir
+    print(f'----------args.pred_dir: {pred_dir}----------')
     suffix = args.suffix
     output_folder = os.path.join(pred_dir, 'eval_ade20k_{}'.format(suffix))
 
+    print(f'----------output_folder: {output_folder}----------')
+
+    sys.path.append('/ssd1/ld/ICCV2023/Painter_sammy/Painter')
     from data.ade20k.gen_color_ade20k_sem import define_colors_per_location_mean_sep
     PALETTE = define_colors_per_location_mean_sep()
 
@@ -159,6 +163,8 @@ if __name__ == '__main__':
         pred_dir=pred_dir,
         dist_type=args.dist_type,
     )
+
+    print('finished evaluator initialization')
 
     inputs = []
     outputs = []

@@ -37,7 +37,7 @@ train_pipeline = [
     dict(
         type='SaveDataPairCustom',
         dir_name='train_org',
-        target_path='../../datasets/coco/pano_ca_inst',
+        target_path='/hhd3/ld/data/COCO2017/pano_ca_inst',
     ),  # custom, we don't care the transforms afterward
     dict(type='DefaultFormatBundle', img_to_float=True),
     dict(
@@ -63,7 +63,7 @@ test_pipeline = [
     dict(
         type='SaveDataPairCustom',
         dir_name='val_org',
-        target_path='../../datasets/coco/pano_ca_inst',
+        target_path='/hhd3/ld/data/COCO2017/pano_ca_inst',
     ),  # custom, we don't care the transforms afterward
     dict(type='Normalize', **img_norm_cfg),
     dict(type='DefaultFormatBundle', img_to_float=True),
@@ -72,7 +72,7 @@ test_pipeline = [
         keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks', 'gt_semantic_seg']),
 ]
 
-data_root = 'data/coco/'
+data_root = '/hhd3/ld/data/COCO2017/'
 data = dict(
     samples_per_gpu=8,
     workers_per_gpu=8,

@@ -137,22 +137,22 @@ def get_abs_pos(abs_pos, has_cls_token, hw):
     Returns:
         Absolute positional embeddings after processing with shape (1, H, W, C)
     """
-    h, w = hw
+    h, w = hw  # 56,28
     if has_cls_token:
-        abs_pos = abs_pos[:, 1:]
-    xy_num = abs_pos.shape[1]
-    size = int(math.sqrt(xy_num))
+        abs_pos = abs_pos[:, 1:]  # 去掉[:,0]这个CLS token, shape=[1,196,1024]
+    xy_num = abs_pos.shape[1]  # 196
+    size = int(math.sqrt(xy_num))  # 14=224/16
     assert size * size == xy_num
 
-    if size != h or size != w:
+    if size != h or size != w:  # 如果size不等于h或者w,则需要用插值,将位置编码变成h,w的大小
         new_abs_pos = F.interpolate(
-            abs_pos.reshape(1, size, size, -1).permute(0, 3, 1, 2),
+            abs_pos.reshape(1, size, size, -1).permute(0, 3, 1, 2),  # [1,1024,14,14]
             size=(h, w),
             mode="bicubic",
             align_corners=False,
         )
 
-        return new_abs_pos.permute(0, 2, 3, 1)
+        return new_abs_pos.permute(0, 2, 3, 1)  # [1,56,28,1024]
     else:
         return abs_pos.reshape(1, h, w, -1)
 

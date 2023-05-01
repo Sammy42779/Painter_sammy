@@ -304,16 +304,18 @@ if __name__ == "__main__":
     ckpt_file = args.ckpt_file
     # define pred paths
     work_dir = args.work_dir
-    pred_dir_inst = os.path.join(work_dir, "pano_inst_inference_{}_{}_size{}".format(
-        ckpt_file, args.prompt, args.input_size))
-    pred_dir_semseg = os.path.join(work_dir, "pano_semseg_inference_{}_{}_size{}".format(
-        ckpt_file, args.prompt, args.input_size))
+    # pred_dir_inst = os.path.join(work_dir, "pano_inst_inference_{}_{}_size{}".format(
+    #     ckpt_file, args.prompt, args.input_size))
+    # pred_dir_semseg = os.path.join(work_dir, "pano_semseg_inference_{}_{}_size{}".format(
+    #     ckpt_file, args.prompt, args.input_size))
+    pred_dir_inst = '/hhd3/ld/data/COCO2017/pano_inst_inference_eval'
+    pred_dir_semseg = '/hhd3/ld/data/COCO2017/pano_semseg_inference_eval'
     instance_seg_result_path = os.path.join(
         work_dir,
         "instance_segm_post_merge_{}_{}".format(ckpt_file, args.prompt),
         "dist{}_{}nms_iou{}".format(args.dist_thr, args.nms_type, args.nms_iou),
     )
-    gt_file = "datasets/coco/annotations/instances_val2017.json"
+    gt_file = "/hhd3/ld/data/COCO2017/annotations/instances_val2017.json"
 
     print(pred_dir_inst)
     print(pred_dir_semseg)

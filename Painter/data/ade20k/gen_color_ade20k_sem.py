@@ -121,9 +121,9 @@ def get_args_parser():
 if __name__ == '__main__':
     args = get_args_parser()
 
-    image_dir = os.path.join("datasets/ade20k/images", args.split)
-    segm_dir = os.path.join("datasets/ade20k/annotations", args.split)
-    save_dir = os.path.join("datasets/ade20k/annotations_with_color", args.split)
+    image_dir = os.path.join("/hhd3/ld/data/ade20k/images", args.split)
+    segm_dir = os.path.join("/hhd3/ld/data/ade20k/annotations", args.split)
+    save_dir = os.path.join("/hhd3/ld/data/ade20k/annotations_with_color", args.split)
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 

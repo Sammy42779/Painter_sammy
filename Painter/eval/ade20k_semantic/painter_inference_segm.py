@@ -94,7 +94,7 @@ def run_one_image(img, tgt, size, model, out_path, device):
 
 
 if __name__ == '__main__':
-    dataset_dir = "datasets/"
+    dataset_dir = "/hhd3/ld/data/"
     args = get_args_parser()
     args = ddp_utils.init_distributed_mode(args)
     device = torch.device("cuda")
@@ -106,8 +106,11 @@ if __name__ == '__main__':
 
     path_splits = ckpt_path.split('/')
     ckpt_dir, ckpt_file = path_splits[-2], path_splits[-1]
-    dst_dir = os.path.join('models_inference', ckpt_dir,
-                           "ade20k_semseg_inference_{}_{}_size{}/".format(ckpt_file, prompt, input_size))
+    # dst_dir = os.path.join('models_inference', ckpt_dir,
+    #                        "ade20k_semseg_inference_{}_{}_size{}/".format(ckpt_file, prompt, input_size))
+    dst_dir = os.path.join('/hhd3/ld/data/ade20k/'
+                           "ade20k_seg_inference_{}_{}/".format(ckpt_file, args.prompt))
+    print(f'----------dst_dir: {dst_dir}----------')
 
     if ddp_utils.get_rank() == 0:
         if not os.path.exists(dst_dir):
@@ -135,6 +138,7 @@ if __name__ == '__main__':
     img2 = img2.resize((input_size, input_size))
     img2 = np.array(img2) / 255.
 
+    ## segment 任务 tgt2 不能convert("RGB")
     tgt2 = Image.open(tgt2_path)
     tgt2 = tgt2.resize((input_size, input_size))
     tgt2 = np.array(tgt2) / 255.

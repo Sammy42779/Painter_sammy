@@ -221,7 +221,7 @@ class Block(nn.Module):
             H, W = x.shape[1], x.shape[2]
             x, pad_hw = window_partition(x, self.window_size)
 
-        x = self.attn(x)
+        x = self.attn(x)  # 通过QKV计算attention
         # Reverse window partition
         if self.window_size > 0:
             x = window_unpartition(x, self.window_size, pad_hw, (H, W))
@@ -259,7 +259,7 @@ class Painter(nn.Module):
              residual_block_indexes=(),
              use_act_checkpoint=False,
              pretrain_img_size=224,
-             pretrain_use_cls_token=True,
+             pretrain_use_cls_token=True,  # 表示在Transformer编码器的输入序列中, 将会添加一个特殊的分类CLS token
              out_feature="last_feat",
              decoder_embed_dim=128,
              loss_func="smoothl1",
@@ -382,52 +382,59 @@ class Painter(nn.Module):
         imgs = x.reshape(shape=(x.shape[0], 3, h * p, w * p))
         return imgs
 
-    def forward_encoder(self, imgs, tgts, bool_masked_pos):
-        # embed patches
-        x = self.patch_embed(imgs)
-        y = self.patch_embed(tgts)
+    def forward_encoder(self, imgs, tgts, bool_masked_pos):  # img=[1,3,896,448], tgts=[1,3,896,448]
+        # embed patches, 初始化的embed_dim=1024, 没有通道信息: 将输入图像分割成大小相等的patches, 然后将这些子块嵌入到一个更低维的表示中, 应该是变成一长条patch序列, 每个patch由n维向量表示
+        x = self.patch_embed(imgs)   # [1,56,28,1024] B C H W -> B H W C
+        y = self.patch_embed(tgts)   # [1,56,28,1024] B C H W -> B H W C
         batch_size, Hp, Wp, _ = x.size()
         seq_len = Hp * Wp
 
-        mask_token = self.mask_token.expand(batch_size, Hp, Wp, -1)
+        mask_token = self.mask_token.expand(batch_size, Hp, Wp, -1)  # [1,1,1,1024] -> [1,56,28,1024] 这里的-1就是初始化时候的embed_dim=1024
         # replace the masked visual tokens by mask_token
-        w = bool_masked_pos.unsqueeze(-1).type_as(mask_token).reshape(-1, Hp, Wp, 1)
-        y = y * (1 - w) + mask_token * w
+        w = bool_masked_pos.unsqueeze(-1).type_as(mask_token).reshape(-1, Hp, Wp, 1)  # 用于在指定维度上增加一个大小为1的维度
+        y = y * (1 - w) + mask_token * w  # 这里是构建了输入的target, mask_token就是初始化的要预测的图像, 即对应的任务的预测结果
 
-        # add pos embed w/o cls token
-        x = x + self.segment_token_x
+        # add pos embed w/o cls token  without/   因为后面要将x和y concat 起来，所以要用segment_token_x/y来区分是输入图像还是目标图像, 这个token不加给CLS token
+        x = x + self.segment_token_x  # 广播机制, 给x的每个patch都加上segment_token_x, 表明这是输入图像
         y = y + self.segment_token_y
-        if self.pos_embed is not None:
-            x = x + get_abs_pos(
+        if self.pos_embed is not None:  # self.pos_embed = [1,197,1024], 其中197=(224/16)*(224/16)+1[CLS token]
+            x = x + get_abs_pos(  # 使用 get_abs_pos 函数获取绝对位置嵌入并将其添加到输入和目标图像张量上, CLS token不加位置编码
                 self.pos_embed, self.pretrain_use_cls_token, (x.shape[1], x.shape[2])
-            )
+            )  # 如果num_positions不等于hw的大小, 则需要resize, 这里的get_abs_pos输出shape=[1,56,28,1024]和x一致
             y = y + get_abs_pos(
                 self.pos_embed, self.pretrain_use_cls_token, (y.shape[1], y.shape[2])
             )
-
+        """
+        %%%%%%%%%%%%%在这之上是在构建输入的x和y数据样式
+        那么应该在这之后进行对抗样本的构建
+        1. 对抗样本不能先norm,因为对抗样本的范围在0-1之间
+            1.1 需要先生成数据形式,然后再进行norm用于后面ViT提取特征
+        2. mask_token, segment_token, position_embed都不能添加扰动, 只能是原始图像上加扰动
+            2.1 那么创建对抗样本的位置需要改变, 不在这里
+        """
         merge_idx = 2
-        x = torch.cat((x, y), dim=0)
+        x = torch.cat((x, y), dim=0)  # 按batch_size维度拼接, [2,56,28,1024]
         # apply Transformer blocks
-        out = []
-        for idx, blk in enumerate(self.blocks):
-            x = blk(x)
-            if idx == merge_idx:
-                x = (x[:x.shape[0]//2] + x[x.shape[0]//2:]) * 0.5
+        out = [] 
+        for idx, blk in enumerate(self.blocks):  # 这里是用ViT做encoder, 24 blocks for ViT-large
+            x = blk(x)  # 输出的shape没有改变 [2,56,28,1024]
+            if idx == merge_idx:  # merge the early features of the input image and the output image, 3 blocks, 所以之后变成1的batch size了?
+                x = (x[:x.shape[0]//2] + x[x.shape[0]//2:]) * 0.5  # ?
             if idx in [5, 11, 17, 23]:
                 out.append(self.norm(x))
-        return out
+        return out  # idx=5,11,17,23时, 保留这几层的输出
 
-    def forward_decoder(self, x):
-        # predictor projection
-        x = torch.cat(x, dim=-1)
-        x = self.decoder_embed(x)
-        p = self.patch_size
-        h, w = x.shape[1], x.shape[2]
-        x = x.reshape(shape=(x.shape[0], h, w, p, p, self.decoder_embed_dim))
-        x = torch.einsum('nhwpqc->nchpwq', x)
-        x = x.reshape(shape=(x.shape[0], -1, h * p, w * p))
-
-        x = self.decoder_pred(x) # Bx3xHxW
+    def forward_decoder(self, x):  
+        # predictor projection  解码器的前向传播, 将编码器提取的特征映射回原始图像空间
+        x = torch.cat(x, dim=-1)  # 按最后一个维度拼接 4个[1,56,28,1024] -> [1,56,28,1024*4]
+        x = self.decoder_embed(x)  # [1,56,28,16384] 全连接层, 它的作用是将编码器（ViT）提取的特征映射到一个适当的尺寸, 以便后续解码器步骤可以将这些特征转换回原始分辨率
+        p = self.patch_size  # 16
+        h, w = x.shape[1], x.shape[2]  # 56, 28
+        x = x.reshape(shape=(x.shape[0], h, w, p, p, self.decoder_embed_dim))  # [1,56,28,16,16,64] self.decoder_embed_dim=64
+        x = torch.einsum('nhwpqc->nchpwq', x)  # [1,64,56,16,28,16] 交换维度
+        x = x.reshape(shape=(x.shape[0], -1, h * p, w * p))  # [1,64,896,448] 64=16*4, 896=56*16, 448=28*16
+ 
+        x = self.decoder_pred(x) # Bx3xHxW  [1,3,896,448] 3是RGB通道
         return x
 
     def forward_loss(self, pred, tgts, mask, valid):
@@ -465,8 +472,8 @@ class Painter(nn.Module):
         if bool_masked_pos is None:
             bool_masked_pos = torch.zeros((imgs.shape[0], self.patch_embed.num_patches), dtype=torch.bool).to(imgs.device)
         else:
-            bool_masked_pos = bool_masked_pos.flatten(1).to(torch.bool)
-        latent = self.forward_encoder(imgs, tgts, bool_masked_pos)
+            bool_masked_pos = bool_masked_pos.flatten(1).to(torch.bool)   # 变成True/False
+        latent = self.forward_encoder(imgs, tgts, bool_masked_pos)  ## 得到encoder后的输出, 4个层的输出, 每一个输出的shape是[1,56,28,1024]
         pred = self.forward_decoder(latent)  # [N, L, p*p*3]
         loss = self.forward_loss(pred, tgts, bool_masked_pos, valid)
         return loss, self.patchify(pred), bool_masked_pos

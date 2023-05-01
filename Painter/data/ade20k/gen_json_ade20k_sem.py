@@ -19,15 +19,15 @@ def get_args_parser():
     parser.add_argument('--split', type=str, help='dataset split', 
                         choices=['training', 'validation'], required=True)
     parser.add_argument('--output_dir', type=str, help='path to output dir', 
-                        default='datasets/ade20k')
+                        default='/hhd3/ld/data/ADEChallengeData2016')
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     args = get_args_parser()
 
-    image_dir = os.path.join("datasets/ade20k/images", args.split)
-    annos_dir = os.path.join("datasets/ade20k/annotations_with_color", args.split)
+    image_dir = os.path.join("/hhd3/ld/data/ADEChallengeData2016/images", args.split)
+    annos_dir = os.path.join("/hhd3/ld/data/ADEChallengeData2016/annotations_with_color", args.split)
     save_path = os.path.join(args.output_dir, "ade20k_{}_image_semantic.json".format(args.split))
 
     output_dict = []
@@ -40,8 +40,8 @@ if __name__ == '__main__':
         assert os.path.isfile(image_path)
         assert os.path.isfile(panoptic_path)
         pair_dict = {}
-        pair_dict["image_path"] = os.path.join("ade20k/images/{}/".format(args.split), image_name + ".jpg")
-        pair_dict["target_path"] = "ade20k/annotations_with_color/{}/".format(args.split) + image_name + ".png"
+        pair_dict["image_path"] = os.path.join("ADEChallengeData2016/images/{}/".format(args.split), image_name + ".jpg")
+        pair_dict["target_path"] = "ADEChallengeData2016/annotations_with_color/{}/".format(args.split) + image_name + ".png"
         pair_dict["type"] = "ade20k_image2semantic"
         output_dict.append(pair_dict)
     json.dump(output_dict, open(save_path, 'w'))
