@@ -20,12 +20,17 @@ import tqdm
 import matplotlib.pyplot as plt
 from PIL import Image
 
+import random
+
 ## change sys path_dir based on the server 修改当前Painter路径，不是数据集路径
 ## 108: '/ssd1/ld/ICCV2023/Painter_sammy/Painter'
 ## 110: '/ssd3/ld/sammy2023/Painter_sammy/Painter'
 # sys.path.append('/ssd1/ld/ICCV2023/Painter_sammy/Painter')
 sys.path.append('/ssd1/ld/ICCV2023/Painter_sammy/Painter')
 import models_painter
+
+sys.path.append('/ssd1/ld/ICCV2023/Painter_sammy/Painter/eval')
+from attack_utils import *
 
 
 imagenet_mean = np.array([0.485, 0.456, 0.406])
@@ -81,12 +86,15 @@ def run_one_image(img, tgt, size, model, out_path, device):
 def get_args_parser():
     parser = argparse.ArgumentParser('NYU Depth V2', add_help=False)
     parser.add_argument('--ckpt_path', type=str, help='path to ckpt',
-                        default='')
+                        default='/hhd3/ld/checkpoint/ckpt_Painter/painter_vit_large.pth')
     parser.add_argument('--model', type=str, help='dir to ckpt',
                         default='painter_vit_large_patch16_input896x448_win_dec64_8glb_sl1')
     parser.add_argument('--prompt', type=str, help='prompt image in train set',
                         default='study_room_0005b/rgb_00094')
     parser.add_argument('--input_size', type=int, default=448)
+    parser.add_argument('--alpha', default=8, type=int,
+                    help='max perturbation (default: 8), need to divide by 255')
+    parser.add_argument('--attack_id', type=str, default='attack_A')
     return parser.parse_args()
 
 
@@ -106,9 +114,9 @@ if __name__ == '__main__':
 
     ## ## change based on the server
     ## 108: /data1/; 110: /hhd3/
-    dst_dir = os.path.join('/hhd3/ld/data/nyu_depth_v2/'
-                           "nyuv2_depth_inference_{}_{}/".format(ckpt_file, args.prompt))
-    print(f'----------dst_dir: {dst_dir}----------')
+    dst_dir = os.path.join('/hhd3/ld/data/nyu_depth_v2/output/{}_{}/'
+                           "nyuv2_depth_inference_{}_{}/".format(args.attack_id, args.alpha, ckpt_file, args.prompt))
+    print(f'@@@@@@@@@@@@@ dst_dir: {dst_dir} @@@@@@@@@@@@@')
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
 
@@ -119,6 +127,9 @@ if __name__ == '__main__':
     tgt2_path = tgt_path
 
     res, hres = args.input_size, args.input_size
+
+    i = 0
+    SEED = random.choice(np.arange(len(img_path_list)))
 
     for img_path in tqdm.tqdm(img_path_list):
         ############################################################
@@ -159,5 +170,48 @@ if __name__ == '__main__':
         tgt = tgt - imagenet_mean
         tgt = tgt / imagenet_std
 
+        if args.attack_id == 'attack_A' or args.attack_id == 'attack_AC' or args.attack_id == 'attack_C':
+            adv_img = construct_adv_AC_fgsm(img, tgt, model_painter, device, alpha=args.alpha/255., rand_init=False)
+        elif args.attack_id == 'attack_B':
+            adv_tgt = construct_adv_B_fgsm(img, tgt, model_painter, device, alpha=args.alpha/255., rand_init=False)
+
         torch.manual_seed(2)
-        run_one_image(img, tgt, size, model_painter, out_path, device)
+
+        if args.attack_id == 'attack_A':
+            ## 把query部分仍然改成原始的图像, 相当于noise只加在了A图上
+            query_img = Image.open(img_path).convert("RGB")
+            query_img = query_img.resize((res, hres))
+            query_img = np.array(query_img) / 255.
+            query_img = query_img - imagenet_mean
+            query_img = query_img / imagenet_std
+            adv_img[res:,:,:] = query_img
+
+        elif args.attack_id == 'attack_C':
+            ## 把prompt部分仍然改成原始的图像, 相当于noise只加在了C图上
+            promt_img = Image.open(img2_path).convert("RGB")
+            promt_img = promt_img.resize((res, hres))
+            promt_img = np.array(promt_img) / 255.
+            promt_img = promt_img - imagenet_mean
+            promt_img = promt_img / imagenet_std
+            adv_img[:res,:,:] = promt_img
+
+        os.makedirs(f'/hhd3/ld/data/Painter_root/nyu_depth/{args.attack_id}_{args.alpha}/', exist_ok=True)
+
+        if args.attack_id == 'attack_A' or args.attack_id == 'attack_AC' or args.attack_id == 'attack_C':
+            run_one_image(adv_img, tgt, size, model_painter, out_path, device)
+            if i == SEED:
+                np.save(f'/hhd3/ld/data/Painter_root/nyu_depth/{args.attack_id}_{args.alpha}/img2_prompt.npy', img)
+                np.save(f'/hhd3/ld/data/Painter_root/nyu_depth/{args.attack_id}_{args.alpha}/img2_prompt_adv.npy', adv_img)
+                np.save(f'/hhd3/ld/data/Painter_root/nyu_depth/{args.attack_id}_{args.alpha}/tgt2_prompt.npy', tgt)
+            i += 1
+
+        elif args.attack_id == 'attack_B':
+            run_one_image(img, adv_tgt, size, model_painter, out_path, device)
+            if i == SEED:
+                np.save(f'/hhd3/ld/data/Painter_root/nyu_depth/{args.attack_id}_{args.alpha}/img2_prompt.npy', img)
+                np.save(f'/hhd3/ld/data/Painter_root/nyu_depth/{args.attack_id}_{args.alpha}/tgt2_prompt.npy', tgt)
+                np.save(f'/hhd3/ld/data/Painter_root/nyu_depth/{args.attack_id}_{args.alpha}/tgt2_prompt_adv.npy', adv_tgt)
+            i += 1
+
+
+

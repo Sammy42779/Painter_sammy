@@ -18,18 +18,26 @@ set -x
 JOB_NAME="painter_vit_large"  # 
 CKPT_FILE="painter_vit_large.pth"
 PROMPT="study_room_0005b/rgb_00094"  # official prompt
-# EXP_ID="exp_mapping_1_1_b"
-# EXP_ID="exp_input_distribution_2_1_a"
-# EXP_ID="exp_output_distribution_3_1_a"
-# EXP_ID="exp_baseline"
-# EXP_ID="exp_format_4_1_a"
+
 # EXP_ID=exp_POS_A_mask_A
 # EXP_ID='exp_POS_B_mask_B'
 # EXP_ID='exp_POS_AB_mask_AB'  # same as format_4_1_a
 # EXP_ID=exp_POS_A_ood_A_animeGAN
+# EXP_ID=exp_POS_B_ood_B_animeGAN
+# EXP_ID=exp_POS_AB_exchange_AB
+# EXP_ID=exp_POS_B_random_B_same_task
+# EXP_ID=exp_POS_B_random_B_other_task_1
+# EXP_ID=exp_POS_A_random_A_same_task
+# EXP_ID=exp_POS_A_random_A_other_task
+# EXP_ID=exp_POS_B_random_B_other_task_Flickr
+# EXP_ID=exp_POS_B_random_B_other_task_random
+TRANSFER_IMG="placeholder"
+
+# EXP_ID=exp_POS_A_animeGAN_A
 # TRANSFER_IMG="/hhd3/ld/data/nyu_depth_v2/AnimeGANv2/rgb_00094_animeGAN.png"
-EXP_ID=exp_POS_B_ood_B_animeGAN
-TRANSFER_IMG="/hhd3/ld/data/nyu_depth_v2/AnimeGANv2/sync_depth_00094_animeGAN.png"
+# EXP_ID=exp_POS_B_animeGAN_B
+# TRANSFER_IMG="/hhd3/ld/data/nyu_depth_v2/AnimeGANv2/sync_depth_00094_animeGAN.png"
+
 
 
 MODEL="painter_vit_large_patch16_input896x448_win_dec64_8glb_sl1"
@@ -37,14 +45,14 @@ CKPT_PATH="/hhd3/ld/checkpoint/ckpt_Painter/painter_vit_large.pth"
 DST_DIR="/hhd3/ld/data/nyu_depth_v2/nyuv2_depth_inference_${CKPT_FILE}_${PROMPT}_${EXP_ID}"
 
 # inference
-CUDA_VISIBLE_DEVICES=2 python eval/nyuv2_depth/painter_inference_depth_exp_components.py \
+CUDA_VISIBLE_DEVICES=4 python eval/nyuv2_depth/painter_inference_depth_exp_components.py \
   --ckpt_path /hhd3/ld/checkpoint/ckpt_Painter/painter_vit_large.pth \
   --model ${MODEL} \
   --prompt ${PROMPT} \
   --exp_id ${EXP_ID} \
   --transfer_img ${TRANSFER_IMG}
 
-CUDA_VISIBLE_DEVICES=2 python eval/nyuv2_depth/eval_with_pngs.py \
+CUDA_VISIBLE_DEVICES=4 python eval/nyuv2_depth/eval_with_pngs.py \
   --pred_path ${DST_DIR} \
   --gt_path /hhd3/ld/data/nyu_depth_v2/official_splits/test/ \
   --dataset nyu --min_depth_eval 1e-3 --max_depth_eval 10 --eigen_crop

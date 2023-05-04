@@ -31,7 +31,8 @@ from util.ddp_utils import DatasetTest
 from util import ddp_utils
 
 sys.path.append('/ssd1/ld/ICCV2023/Painter_sammy/Painter/eval')
-from exp_components_utils import *
+from attack_utils import *
+
 
 imagenet_mean = np.array([0.485, 0.456, 0.406])
 imagenet_std = np.array([0.229, 0.224, 0.225])
@@ -50,8 +51,12 @@ def get_args_parser():
     parser.add_argument('--world_size', default=1, type=int,
                         help='number of distributed processes')
     parser.add_argument('--dist_url', default='env://', help='url used to set up distributed training')
-    parser.add_argument('--exp_id', type=str, default='exp_mapping_1_1_a')
-    parser.add_argument('--transfer_img', type=str, default='animeGAN')
+    
+    parser.add_argument('--alpha', default=8, type=int,
+                    help='max perturbation (default: 8), need to divide by 255')
+    parser.add_argument('--attack_id', type=str, default='attack_A')
+    
+    
     return parser.parse_args()
 
 
@@ -112,8 +117,8 @@ if __name__ == '__main__':
     ckpt_dir, ckpt_file = path_splits[-2], path_splits[-1]
     # dst_dir = os.path.join('models_inference', ckpt_dir,
     #                        "ade20k_semseg_inference_{}_{}_size{}/".format(ckpt_file, prompt, input_size))
-    dst_dir = os.path.join('/hhd3/ld/data/ade20k/output/'
-                           "ade20k_seg_inference_{}_{}_{}/".format(ckpt_file, args.prompt, args.exp_id))
+    dst_dir = os.path.join('/hhd3/ld/data/ade20k/'
+                           "ade20k_seg_inference_{}_{}/{}_{}".format(ckpt_file, args.prompt))
     print(f'----------dst_dir: {dst_dir}----------')
 
     if ddp_utils.get_rank() == 0:
@@ -134,18 +139,18 @@ if __name__ == '__main__':
     data_loader_val = DataLoader(dataset_val, batch_size=1, sampler=sampler_val,
                                  drop_last=False, collate_fn=ddp_utils.collate_fn, num_workers=2)
 
-    img2_path = dataset_dir + "ade20k/images/training/{}.jpg".format(prompt)  # prompt
-    tgt2_path = dataset_dir + "ade20k/annotations_with_color/training/{}.png".format(prompt)  # ground-truth of prompt
+    img2_path = dataset_dir + "ade20k/images/training/{}.jpg".format(prompt)
+    tgt2_path = dataset_dir + "ade20k/annotations_with_color/training/{}.png".format(prompt)
 
-    """
-    修改prompt, 即 A B 图
-    """
-    img2, tgt2 = get_prompt_gt(img2_path, tgt2_path, input_size, args.exp_id, args.transfer_img, task='ade20k_segment')
+    # load the shared prompt image pair
+    img2 = Image.open(img2_path).convert("RGB")
+    img2 = img2.resize((input_size, input_size))
+    img2 = np.array(img2) / 255.
 
-    
-    ## 保存实验图
-    i = 0
-    SEED = random.choice(np.arange(len(data_loader_val)))
+    ## segment 任务 tgt2 不能convert("RGB")
+    tgt2 = Image.open(tgt2_path)
+    tgt2 = tgt2.resize((input_size, input_size))
+    tgt2 = np.array(tgt2) / 255.
 
     model_painter.eval()
     for data in tqdm.tqdm(data_loader_val):
@@ -168,12 +173,6 @@ if __name__ == '__main__':
         # normalize by ImageNet mean and std
         tgt = tgt - imagenet_mean
         tgt = tgt / imagenet_std
-
-        if i == SEED:
-            np.save(f'/hhd3/ld/data/ade20k/save_data/img2_prompt_{args.exp_id}.npy', img)
-            np.save(f'/hhd3/ld/data/ade20k/save_data/tgt2_prompt_{args.exp_id}.npy', tgt)
-            print('%%%%%%%%%%%Finished save imgs')
-        i += 1
 
         # make random mask reproducible (comment out to make it change)
         torch.manual_seed(2)

@@ -135,6 +135,7 @@ if __name__ == '__main__':
     res, hres = args.input_size, args.input_size
 
     i = 0
+    SEED = random.choice(np.arange(len(img_path_list)))
 
     for img_path in tqdm.tqdm(img_path_list):
         room_name = img_path.split("/")[-2]
@@ -165,9 +166,9 @@ if __name__ == '__main__':
         tgt = tgt / imagenet_std
 
 
-        if i <= 2:
-            np.save(f'/hhd3/ld/data/Painter_root/nyu_depth/save_data/img2_prompt_{args.exp_id}_{i}.npy', img)
-            np.save(f'/hhd3/ld/data/Painter_root/nyu_depth/save_data/tgt2_prompt_{args.exp_id}_{i}.npy', tgt)
+        if i == SEED:
+            np.save(f'/hhd3/ld/data/Painter_root/nyu_depth/save_data/img2_prompt_{room_name}_{img_name}_{args.exp_id}.npy', img)
+            np.save(f'/hhd3/ld/data/Painter_root/nyu_depth/save_data/tgt2_prompt_{room_name}_{img_name}_{args.exp_id}.npy', tgt)
         i += 1
         torch.manual_seed(2)
         run_one_image(img, tgt, size, model_painter, out_path, device)
