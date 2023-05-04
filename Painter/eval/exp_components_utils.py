@@ -8,196 +8,157 @@ import glob
 FLICKR_LIST = glob.glob('/hhd3/ld/data/flickr30k-images/*.jpg')
 
 
-ADE20K_LIST = glob.glob('/hhd3/ld/data/ade20k/annotations_with_color/validation/*.png')
-COCO_LIST = glob.glob('/hhd3/ld/data/COCO2017/pano_sem_seg/panoptic_segm_train2017_with_color/*.png')
-NYU_LIST = glob.glob('/hhd3/ld/data/nyu_depth_v2/official_splits/test/*/sync_depth*.png')
+NYU_LIST_A = glob.glob('/hhd3/ld/data/nyu_depth_v2/official_splits/test/*/rgb*.jpg')
+NYU_LIST_B = glob.glob('/hhd3/ld/data/nyu_depth_v2/official_splits/test/*/sync_depth*.png')
+ADE20K_LIST_A = glob.glob('/hhd3/ld/data/ade20k/images/validation/*.jpg')
+ADE20K_LIST_B = glob.glob('/hhd3/ld/data/ade20k/annotations_with_color/validation/*.png')
+COCO_LIST_A = glob.glob('/hhd3/ld/data/COCO2017/val2017/*.jpg')
+COCO_LIST_B = glob.glob('/hhd3/ld/data/COCO2017/pano_sem_seg/panoptic_segm_train2017_with_color/*.png')
 
 
 ### 对于NYU depth任务, 如果tgt没有修改, 那么要对深度图做处理, 使得其范围在0-1之间 
 ### tgt = np.array(tgt) / 10000.
 
+def load_origin_img(img_path, input_size):
+    img2 = Image.open(img_path).convert("RGB")
+    img2 = img2.resize((input_size, input_size))
+    img2 = np.array(img2) / 255.
 
-def get_prompt_gt(img2_path, tgt2_path, input_size, exp_id, transfer_img=None, task='ade20k_segment'):
+    return img2
+
+
+def load_origin_tgt(tgt_path, input_size, task=None):
+    if task == 'nyu_depth':
+        tgt2 = Image.open(tgt_path)
+        tgt2 = np.array(tgt2) / 10000.
+        tgt2 = tgt2 * 255
+        tgt2 = Image.fromarray(tgt2).convert("RGB")
+        tgt2 = tgt2.resize((input_size, input_size))
+        tgt2 = np.array(tgt2) / 255.
+    elif task == 'ade20k_segment':
+        tgt2 = Image.open(tgt_path)
+        tgt2 = tgt2.resize((input_size, input_size))
+        tgt2 = np.array(tgt2) / 255. 
+    else:
+        print('task error')
+
+    return tgt2
+
+
+def load_other_tgt(tgt_path, input_size):
+    ## 不区分任务
+    tgt2 = Image.open(tgt_path)
+    tgt2 = tgt2.resize((input_size, input_size))
+    tgt2 = np.array(tgt2) / 255. 
+
+    return tgt2
+ 
+
+def get_prompt_gt(img2_path, tgt2_path, input_size, exp_id, transfer_img=None, task=None):
 
     BLANK_IMG = np.zeros((input_size, input_size, 3), dtype=np.float64)
     WHITE_IMG = np.ones((input_size, input_size, 3), dtype=np.uint8) * 255
 
-    if exp_id == 'exp_mapping_1_1_b' or exp_id == 'exp_mapping_1_1_b_val':
-        # 1-1(b): 将图B替换为ADE20K segmentation任务随机ground-truth, 不是prompt原始配对的gt
-        # load the shared prompt image pair
-        ## prompt不变
-        img2 = Image.open(img2_path).convert("RGB")
-        img2 = img2.resize((input_size, input_size))
+    ########## BASELINE ##########  
+    if 'baseline' in exp_id: ## baseline
+        img2 = load_origin_img(img2_path, input_size)
+        tgt2 = load_origin_tgt(tgt2_path, input_size, task=task)
+
+    ########## MASK A ##########    
+    elif 'POS_A_mask_A' in exp_id: ## mask_A
+        print('@@@@@@ mask A @@@@@@')
+        # 将图A替换为空白图像 BLACK or WHITE
+        img2 = WHITE_IMG if 'white' in exp_id else BLANK_IMG
         img2 = np.array(img2) / 255.
 
-        ## ground-truth随机
-        # random_tgt2_path = '/hhd3/ld/data/ade20k/annotations_with_color/training/ADE_train_00014844.png'
-        # random_tgt2_path = '/hhd3/ld/data/ade20k/annotations_with_color/validation/ADE_val_00000038.png'
+        tgt2 = load_origin_tgt(tgt2_path, input_size, task=task)
+
+    ########## MASK B ##########
+    elif 'POS_B_mask_B' in exp_id: ## mask_B
+        print('@@@@@@ mask B @@@@@@')
+        # 将图B替换为空白图像 BLACK or WHITE
+        img2 = load_origin_img(img2_path, input_size)
+
+        tgt2 = WHITE_IMG if 'white' in exp_id else BLANK_IMG
+        tgt2 = np.array(tgt2) / 255.
+
+    ########## MASK A & B ##########
+    elif 'POS_AB_mask_AB' in exp_id: ## mask_AB
+        # 将图AB替换为空白图像 BLACK or WHITE
+        print('@@@@@@ mask AB @@@@@@')
+        img2 = WHITE_IMG if 'white' in exp_id else BLANK_IMG
+        img2 = np.array(img2) / 255.
+
+        tgt2 = WHITE_IMG if 'white' in exp_id else BLANK_IMG
+        tgt2 = np.array(tgt2) / 255.
+
+    ########## EXCHANGE A & B ##########
+    elif 'POS_AB_exchange_AB' in exp_id: ## exchange_AB
+        print('@@@@@@ exchange AB @@@@@@')
+        tgt2 = load_origin_img(img2_path, input_size)
+        img2 = load_origin_tgt(tgt2_path, input_size, task=task)
+
+    ########## RANDOM A & SAME TASK ##########
+    elif 'POS_A_random_A_same_task' in exp_id: ## random_A_same_task
+        print('@@@@@@ random A same task @@@@@@')
+        ### same task 需要区分任务
+        # 将图A替换为当前任务随机image
+        if task == 'nyu_depth':
+            img2 = load_origin_img(random.choice(NYU_LIST_A), input_size)
+        elif task == 'ade20k_segment':
+            img2 = load_origin_img(random.choice(ADE20K_LIST_A), input_size)
+        tgt2 = load_origin_tgt(tgt2_path, input_size, task=task)
+
+    ########## RANDOM B & SAME TASK ##########
+    elif 'POS_B_random_B_same_task' in exp_id: ## random_B_same_task
+        print('@@@@@@ random B same task @@@@@@')
+        ### same task 需要区分任务, depth的GT需要特殊处理 /10000.
+        # 将图B替换为相同任务随机ground-truth, 不是prompt原始配对的gt
+        img2 = load_origin_img(img2_path, input_size)
         
         if task == 'nyu_depth':
-            random_tgt2_path = random.choice(NYU_LIST)
-            tgt2 = Image.open(random_tgt2_path)
-            tgt2 = np.array(tgt2) / 10000.
-            tgt2 = tgt2 * 255
-            tgt2 = Image.fromarray(tgt2).convert("RGB")
-            tgt2 = tgt2.resize((input_size, input_size))
-            tgt2 = np.array(tgt2) / 255.
+            tgt2 = load_origin_tgt(random.choice(NYU_LIST_B), input_size, task=task)
         else:
-            random_tgt2_path = random.choice(ADE20K_LIST)
-            tgt2 = Image.open(random_tgt2_path)
-            tgt2 = tgt2.resize((input_size, input_size))
-            tgt2 = np.array(tgt2) / 255.
+            tgt2 = load_origin_tgt(random.choice(ADE20K_LIST_B), input_size, task=task)
 
-    elif exp_id == 'exp_mapping_1_1_a':
-        # 1-1(b): 将图B替换为其他任务随机ground-truth, 不是prompt原始配对的gt
-        # load the shared prompt image pair
-        ## prompt不变
-        img2 = Image.open(img2_path).convert("RGB")
-        img2 = img2.resize((input_size, input_size))
-        img2 = np.array(img2) / 255.
+    ########## RANDOM A & OTHER TASK ##########
+    elif 'POS_A_random_A_other_task' in exp_id: ## random_A_other_task
+        ### 将图A替换为COCO_A图
+        img2 = load_origin_img(random.choice(COCO_LIST_A), input_size)
+        tgt2 = load_origin_tgt(tgt2_path, input_size, task=task)
 
-        ## ground-truth随机 但是是其他任务
-        # random_tgt2_path = '/hhd3/ld/data/COCO2017/pano_sem_seg/panoptic_segm_train2017_with_color/000000391460.png'
-        random_tgt2_path = random.choice(COCO_LIST)
-        tgt2 = Image.open(random_tgt2_path)
-        tgt2 = tgt2.resize((input_size, input_size))
-        tgt2 = np.array(tgt2) / 255.
+    ########## RANDOM B & OTHER TASK ##########
+    elif 'POS_B_random_B_other_task' in exp_id: ## random_B_other_task
+        ### 将图B替换为COCO_B图
+        img2 = load_origin_img(img2_path, input_size)
+        tgt2 = load_other_tgt(random.choice(COCO_LIST_B), input_size)
 
-    elif exp_id == 'exp_input_distribution_2_1_a':
-        # 2-1(a): 将图A替换成train OOD图像, 替换input distribution
-        # 替换img2_path为Flickr30K里的图像
-        ## prompt改变OOD
-        ood_img2_path = random.choice(FLICKR_LIST)
-        img2 = Image.open(ood_img2_path).convert("RGB")
-        img2 = img2.resize((input_size, input_size))
-        img2 = np.array(img2) / 255.
-
-        # ground-truth不变
-        if task == 'nyu_depth':
-            tgt2 = Image.open(tgt2_path)
-            tgt2 = np.array(tgt2) / 10000.
-            tgt2 = tgt2 * 255
-            tgt2 = Image.fromarray(tgt2).convert("RGB")
-            tgt2 = tgt2.resize((input_size, input_size))
-            tgt2 = np.array(tgt2) / 255.
-        else:
-            tgt2 = Image.open(tgt2_path)
-            tgt2 = tgt2.resize((input_size, input_size))
-            tgt2 = np.array(tgt2) / 255.
-
-    elif exp_id == 'exp_output_distribution_3_1_a':
-        # 3-1(a): 将图B替换成train OOD图像, 替换output distribution
-        # 替换tgt2_path为Flickr30K里的图像
-        ## prompt不变
-        img2 = Image.open(img2_path).convert("RGB")
-        img2 = img2.resize((input_size, input_size))
-        img2 = np.array(img2) / 255.
-
-        # ground-truth改变OOD
-        ood_tgt2_path = random.choice(FLICKR_LIST)
-        tgt2 = Image.open(ood_tgt2_path)
-        tgt2 = tgt2.resize((input_size, input_size))
-        tgt2 = np.array(tgt2) / 255.
-
-    elif exp_id == 'exp_format_4_1_a':
-        # 4-1(a): 没有format, 没有prompt, 因此img2和tgt2都是空白图像
-        # img2 = Image.open(img2_path).convert("RGB")
-        # img2 = img2.resize((input_size, input_size))
-        img2 = BLANK_IMG
-        img2 = np.array(img2) / 255.
-
-        # tgt2 = Image.open(tgt2_path)
-        # tgt2 = tgt2.resize((input_size, input_size))
-        tgt2 = BLANK_IMG
-        tgt2 = np.array(tgt2) / 255.
-
-    elif 'baseline' in exp_id: ## baseline
-        # load the shared prompt image pair
-        img2 = Image.open(img2_path).convert("RGB")
-        img2 = img2.resize((input_size, input_size))
-        img2 = np.array(img2) / 255.
-
-        if task == 'nyu_depth':
-            tgt2 = Image.open(tgt2_path)
-            tgt2 = np.array(tgt2) / 10000.
-            tgt2 = tgt2 * 255
-            tgt2 = Image.fromarray(tgt2).convert("RGB")
-            tgt2 = tgt2.resize((input_size, input_size))
-            tgt2 = np.array(tgt2) / 255.
-        else:
-            tgt2 = Image.open(tgt2_path)
-            tgt2 = tgt2.resize((input_size, input_size))
-            tgt2 = np.array(tgt2) / 255.
-
-    ### 
-    elif exp_id in ['exp_POS_A_mask_A', 'exp_POS_A_mask_A_white']:
-        print('%%%%%%%%%%%%%%%%%%exp_POS_A_mask_A')
-        # 将图A替换为空白图像
-        img2 = WHITE_IMG if 'white' in exp_id else BLANK_IMG
-        img2 = np.array(img2) / 255.
-
-        if task == 'nyu_depth':
-            tgt2 = Image.open(tgt2_path)
-            tgt2 = np.array(tgt2) / 10000.
-            tgt2 = tgt2 * 255
-            tgt2 = Image.fromarray(tgt2).convert("RGB")
-            tgt2 = tgt2.resize((input_size, input_size))
-            tgt2 = np.array(tgt2) / 255.
-        else:
-            tgt2 = Image.open(tgt2_path)
-            tgt2 = tgt2.resize((input_size, input_size))
-            tgt2 = np.array(tgt2) / 255.
-
-    ### 
-    elif exp_id in ['exp_POS_B_mask_B', 'exp_POS_B_mask_B_white']:
-        print('%%%%%%%%%%%%%%%%%%exp_POS_B_mask_B')
-        # 将图B替换为空白图像
-        img2 = Image.open(img2_path).convert("RGB")
-        img2 = img2.resize((input_size, input_size))
-        img2 = np.array(img2) / 255.
-
-        tgt2 = WHITE_IMG if 'white' in exp_id else BLANK_IMG
-        tgt2 = np.array(tgt2) / 255.
-
-    ### 
-    elif exp_id in ['exp_POS_AB_mask_AB', 'exp_POS_AB_mask_AB_white']:
-        print('%%%%%%%%%%%%%%%%%%exp_POS_AB_mask_AB')
-        # 将图AB替换为空白图像
-        img2 = WHITE_IMG if 'white' in exp_id else BLANK_IMG
-        img2 = np.array(img2) / 255.
-
-        tgt2 = WHITE_IMG if 'white' in exp_id else BLANK_IMG
-        tgt2 = np.array(tgt2) / 255.
-
-    elif exp_id == 'exp_POS_A_ood_A_animeGAN': ## 
+    ########## ANIMEGAN A ##########
+    elif 'POS_A_animeGAN_A' in exp_id: ## animeGAN_A
         # 将图A替换为animeGAN的图像 语义保留, 但是out-of-domain
-        # transfer_img = "/hhd3/ld/data/ade20k/AnimeGANv2/training/ADE_train_00009574_animeGAN.png"
-        img2 = Image.open(transfer_img).convert("RGB")
-        img2 = img2.resize((input_size, input_size))
-        img2 = np.array(img2) / 255.
+        img2 = load_origin_img(transfer_img, input_size)
+        tgt2 = load_origin_tgt(tgt2_path, input_size, task=task)
 
-        if task == 'nyu_depth':
-            tgt2 = Image.open(tgt2_path)
-            tgt2 = np.array(tgt2) / 10000.
-            tgt2 = tgt2 * 255
-            tgt2 = Image.fromarray(tgt2).convert("RGB")
-            tgt2 = tgt2.resize((input_size, input_size))
-            tgt2 = np.array(tgt2) / 255.
-        else:
-            tgt2 = Image.open(tgt2_path)
-            tgt2 = tgt2.resize((input_size, input_size))
-            tgt2 = np.array(tgt2) / 255.
-
-    elif exp_id == 'exp_POS_B_ood_B_animeGAN': ## 
-        img2 = Image.open(img2_path).convert("RGB")
-        img2 = img2.resize((input_size, input_size))
-        img2 = np.array(img2) / 255.
-
+    ########## ANIMEGAN B ##########
+    elif 'POS_B_animeGAN_B' in exp_id: ## animeGAN_B
         # 将图B替换为animeGAN的图像 语义保留, 但是out-of-domain
-        # transfer_img = "/hhd3/ld/data/ade20k/AnimeGANv2/validation/ADE_train_00009574_animeGAN.png"
-        tgt2 = Image.open(transfer_img)
-        tgt2 = tgt2.resize((input_size, input_size))
-        tgt2 = np.array(tgt2) / 255.
+        img2 = load_origin_img(img2_path, input_size)
+        tgt2 = load_other_tgt(transfer_img, input_size)
 
+
+    elif exp_id == 'exp_POS_B_random_B_other_task_Flickr':
+        # 将图B替换为其他任务随机ground-truth, 不是prompt原始配对的gt
+        img2 = load_origin_img(img2_path, input_size)
+
+        ## ground-truth随机 但是是其他数据集
+        tgt2 = load_other_tgt(random.choice(FLICKR_LIST), input_size)
+
+    elif exp_id == 'exp_POS_B_random_B_other_task_random':
+        # 将图B替换为其他任务随机ground-truth, 不是prompt原始配对的gt
+        img2 = load_origin_img(img2_path, input_size)
+
+        ## ground-truth随机 但是是其他数据集
+        random_tgt2_path = '/ssd1/ld/ICCV2023/Painter_sammy/test_random.jpg'
+        tgt2 = load_other_tgt(random_tgt2_path, input_size)
 
     return img2, tgt2
