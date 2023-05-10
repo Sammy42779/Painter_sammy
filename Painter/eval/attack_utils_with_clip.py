@@ -28,75 +28,6 @@ def get_masked_pos(model):
 
 
 
-
-
-def construct_adv_B_pgd(img, tgt, model, device, epsilon, num_steps, step_size, rand_init='rand', is_ours=False):
-
-    model.eval()
-
-    x = reshape(img)
-    tgt = reshape(tgt)
-
-    mask = torch.zeros_like(x)
-    mask[:,:,:448,:] = 1  # B图, 只保留前半部分  [检查] mask的位置是上半部分还是下半部分 上部分是[:,:,:448,:], 下部分是[:,:,448:,:]
-
-    ## --- 如果是我们的,就需要计算中间层,用于后续对比KL loss
-    if is_ours:
-        mask_only_a = torch.zeros_like(x)
-        mask_only_a[:,:,:448,:] = 1  ## 用于只保留A图
-
-        mask_only_c = torch.zeros_like(x)
-        mask_only_c[:,:,448:,:] = 1  
-
-        mask_tgt = torch.zeros_like(tgt)   ## 把B图全部mask掉
-
-
-    if rand_init:  # [检查] 是选取x还是tgt作为初始值, A和C为x, B为tgt
-        tgt_adv = tgt.detach() + torch.from_numpy(np.random.uniform(-epsilon,
-                                                                   epsilon, tgt.shape)).float() * mask
-        tgt_adv = torch.clip(tgt_adv, 0.0, 1.0)
-    else:
-        tgt_adv = tgt.detach()
-
-    tgt_adv.requires_grad_()
-
-    bool_masked_pos = get_masked_pos(model)
-    valid = torch.ones_like(tgt)
-
-    if isinstance(model, torch.nn.parallel.DistributedDataParallel):
-        model = model.module
-    
-    bool_masked_pos = bool_masked_pos.flatten(1).to(torch.bool)   # 变成True/False
-
-    for i in range(num_steps): 
-        tgt_adv.requires_grad_()   # [检查] 进入模型的对抗样本是tgt_adv还是x_adv
-        latent_adv = model.forward_encoder(images_normalize(x).float().to(device), images_normalize(tgt_adv).float().to(device), bool_masked_pos.to(device))
-        pred_adv = model.forward_decoder(latent_adv)
-        latent_adv = torch.cat(latent_adv, dim=-1)
-        # prob_dist2 = F.softmax(latent_adv, dim=-1)
-
-        # with torch.enable_grad():
-        loss = model.forward_loss(pred_adv, images_normalize(tgt).float().to(device), bool_masked_pos.to(device), valid.to(device))  ## 1.2999
-        # print(loss)
-        loss.backward()
-
-        # [检查] 对抗扰动的方向是tgt_adv还是x_adv
-        grad_sign = tgt_adv.grad.detach().sign()
-        perturbation = step_size * grad_sign * mask
-        tgt_adv = tgt_adv.detach() + perturbation
-        tgt_adv = torch.min(torch.max(tgt_adv, tgt - epsilon), tgt + epsilon)  # [检查] 对抗样本的范围是tgt还是x
-        tgt_adv = torch.clip(tgt_adv, 0.0, 1.0)   # L2 bound是指所有像素加起来不能超过budget, 而Linf bound是指每个像素的变化不能超过budget
-
-    x = x.squeeze(dim=0)
-    x = torch.einsum('chw->hwc', x)
-
-    tgt_adv = tgt_adv.squeeze(dim=0)
-    tgt_adv = torch.einsum('chw->hwc', tgt_adv)
-
-    return x.detach().numpy(), tgt_adv.detach().numpy()
-
-
-
 def construct_adv_A_pgd(img, tgt, model, device, epsilon, num_steps, step_size, rand_init='rand', is_ours=False):
 
     model.eval()
@@ -200,6 +131,73 @@ def construct_adv_A_pgd(img, tgt, model, device, epsilon, num_steps, step_size, 
 
 
 
+def construct_adv_B_pgd(img, tgt, model, device, epsilon, num_steps, step_size, rand_init='rand', is_ours=False):
+
+    model.eval()
+
+    x = reshape(img)
+    tgt = reshape(tgt)
+
+    mask = torch.zeros_like(x)
+    mask[:,:,:448,:] = 1  # B图, 只保留前半部分  [检查] mask的位置是上半部分还是下半部分 上部分是[:,:,:448,:], 下部分是[:,:,448:,:]
+
+    ## --- 如果是我们的,就需要计算中间层,用于后续对比KL loss
+    if is_ours:
+        mask_only_a = torch.zeros_like(x)
+        mask_only_a[:,:,:448,:] = 1  ## 用于只保留A图
+
+        mask_only_c = torch.zeros_like(x)
+        mask_only_c[:,:,448:,:] = 1  
+
+        mask_tgt = torch.zeros_like(tgt)   ## 把B图全部mask掉
+
+
+    if rand_init:  # [检查] 是选取x还是tgt作为初始值, A和C为x, B为tgt
+        tgt_adv = tgt.detach() + torch.from_numpy(np.random.uniform(-epsilon,
+                                                                   epsilon, tgt.shape)).float() * mask
+        tgt_adv = torch.clip(tgt_adv, 0.0, 1.0)
+    else:
+        tgt_adv = tgt.detach()
+
+    tgt_adv.requires_grad_()
+
+    bool_masked_pos = get_masked_pos(model)
+    valid = torch.ones_like(tgt)
+
+    if isinstance(model, torch.nn.parallel.DistributedDataParallel):
+        model = model.module
+    
+    bool_masked_pos = bool_masked_pos.flatten(1).to(torch.bool)   # 变成True/False
+
+    for i in range(num_steps): 
+        tgt_adv.requires_grad_()   # [检查] 进入模型的对抗样本是tgt_adv还是x_adv
+        latent_adv = model.forward_encoder(images_normalize(x).float().to(device), images_normalize(tgt_adv).float().to(device), bool_masked_pos.to(device))
+        pred_adv = model.forward_decoder(latent_adv)
+        latent_adv = torch.cat(latent_adv, dim=-1)
+        # prob_dist2 = F.softmax(latent_adv, dim=-1)
+
+        # with torch.enable_grad():
+        loss = model.forward_loss(pred_adv, images_normalize(tgt).float().to(device), bool_masked_pos.to(device), valid.to(device))  ## 1.2999
+        # print(loss)
+        loss.backward()
+
+        # [检查] 对抗扰动的方向是tgt_adv还是x_adv
+        grad_sign = tgt_adv.grad.detach().sign()
+        perturbation = step_size * grad_sign * mask
+        tgt_adv = tgt_adv.detach() + perturbation
+        tgt_adv = torch.min(torch.max(tgt_adv, tgt - epsilon), tgt + epsilon)  # [检查] 对抗样本的范围是tgt还是x
+        tgt_adv = torch.clip(tgt_adv, 0.0, 1.0)   # L2 bound是指所有像素加起来不能超过budget, 而Linf bound是指每个像素的变化不能超过budget
+
+    x = x.squeeze(dim=0)
+    x = torch.einsum('chw->hwc', x)
+
+    tgt_adv = tgt_adv.squeeze(dim=0)
+    tgt_adv = torch.einsum('chw->hwc', tgt_adv)
+
+    return x.detach().numpy(), tgt_adv.detach().numpy()
+
+
+
 def construct_adv_C_pgd(img, tgt, model, device, epsilon, num_steps, step_size, rand_init='rand'):
 
     model.eval()
@@ -252,6 +250,7 @@ def construct_adv_C_pgd(img, tgt, model, device, epsilon, num_steps, step_size, 
     tgt = torch.einsum('chw->hwc', tgt)
 
     return x_adv.detach().numpy(), tgt.detach().numpy()
+
 
 
 def construct_adv_AB_pgd(img, tgt, model, device, epsilon, num_steps, step_size, rand_init='rand', is_ours=False):
@@ -455,7 +454,54 @@ def construct_adv_BC_pgd(img, tgt, model, device, epsilon, num_steps, step_size,
 
 
 
+def construct_adv_C_fgsm(img, tgt, model, device, alpha=0.031, rand_init=True):
+    model.eval()
 
+    x = reshape(img)
+    tgt = reshape(tgt)
+
+    if rand_init:
+        delta_c = torch.from_numpy(np.random.uniform(-alpha, alpha, x[:,:,448:,:].shape)).float()
+        delta_c = torch.clip(x[:,:,448:,:] + delta_c, 0.0, 1.0) - x[:,:,448:,:]
+    else:
+        delta_c = torch.zeros_like(x[:,:,448:,:])
+
+    x_adv = x.clone().detach()
+
+    delta_c.requires_grad_()   # [1,3,448,448]
+
+    bool_masked_pos = get_masked_pos(model)
+    valid = torch.ones_like(tgt)
+
+    if isinstance(model, torch.nn.parallel.DistributedDataParallel):
+        model = model.module
+
+    x_adv[:,:,448:,:] += delta_c  # C图
+    
+    bool_masked_pos = bool_masked_pos.flatten(1).to(torch.bool)   # 变成True/False
+    latent = model.forward_encoder(images_normalize(x_adv).float().to(device), images_normalize(tgt).float().to(device), bool_masked_pos.to(device))
+    pred = model.forward_decoder(latent)
+    model.zero_grad()
+    with torch.enable_grad():
+        loss = model.forward_loss(pred, images_normalize(tgt).float().to(device), bool_masked_pos.to(device), valid.to(device))
+        
+    loss.backward()
+
+    grad_sign_c = delta_c.grad.detach().sign()  # [1,3,448,448] 代表方向
+    perturbation_c = alpha * grad_sign_c
+    delta_c = delta_c + perturbation_c  # update delta
+    delta_c = torch.clip(delta_c, -alpha, alpha)
+
+    delta_c = torch.clip(x[:,:,448:,:] + delta_c, 0.0, 1.0) - x[:,:,448:,:]
+    x[:,:,448:,:] += delta_c
+
+    x = x.squeeze(dim=0)
+    x = torch.einsum('chw->hwc', x)
+
+    tgt = tgt.squeeze(dim=0)
+    tgt = torch.einsum('chw->hwc', tgt)
+
+    return x.detach().numpy(), tgt.detach().numpy()
 
 
 # def construct_adv_A_pgd(img, tgt, model, device, epsilon, num_steps, step_size, rand_init='rand'):
