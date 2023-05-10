@@ -113,7 +113,7 @@ if __name__ == '__main__':
 
     ## ## change based on the server
     ## 108: /data1/; 110: /hhd3/
-    dst_dir = os.path.join('/hhd3/ld/data/nyu_depth_v2/'
+    dst_dir = os.path.join('/hhd3/ld/data/nyu_depth_v2/component_analysis/'
                            "nyuv2_depth_inference_{}_{}_{}/".format(ckpt_file, args.prompt, args.exp_id))
     print(f'----------dst_dir: {dst_dir}----------')
     if not os.path.exists(dst_dir):
@@ -136,6 +136,9 @@ if __name__ == '__main__':
 
     i = 0
     SEED = random.choice(np.arange(len(img_path_list)))
+
+    save_data_path = f'/hhd3/ld/data/Painter_root/nyu_depth/component_analysis/'
+    os.makedirs(save_data_path, exist_ok=True)
 
     for img_path in tqdm.tqdm(img_path_list):
         room_name = img_path.split("/")[-2]
@@ -167,8 +170,8 @@ if __name__ == '__main__':
 
 
         if i == SEED:
-            np.save(f'/hhd3/ld/data/Painter_root/nyu_depth/save_data/img2_prompt_{room_name}_{img_name}_{args.exp_id}.npy', img)
-            np.save(f'/hhd3/ld/data/Painter_root/nyu_depth/save_data/tgt2_prompt_{room_name}_{img_name}_{args.exp_id}.npy', tgt)
+            np.save(f'{save_data_path}/img2_prompt_{args.exp_id}.npy', img)
+            np.save(f'{save_data_path}/tgt2_prompt_{args.exp_id}.npy', tgt)
         i += 1
         torch.manual_seed(2)
         run_one_image(img, tgt, size, model_painter, out_path, device)

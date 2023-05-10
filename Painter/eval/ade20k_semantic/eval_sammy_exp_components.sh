@@ -15,10 +15,10 @@ JOB_NAME="painter_vit_large"
 CKPT_FILE="painter_vit_large.pth"
 PROMPT=ADE_train_00009574
 
-MASTER_PORT=1888
+MASTER_PORT=1299
 
 
-# EXP_ID=exp_baseline
+# EXP_ID=baseline
 
 # EXP_ID=exp_POS_A_mask_A
 # EXP_ID=exp_POS_B_mask_B
@@ -28,16 +28,18 @@ MASTER_PORT=1888
 # EXP_ID=exp_POS_A_random_A_same_task
 # EXP_ID=exp_POS_A_random_A_other_task
 # EXP_ID=exp_POS_B_random_B_same_task
-# EXP_ID=exp_POS_B_random_B_other_task
+# EXP_ID=POS_B_random_B_other_task
 
-# EXP_ID=exp_POS_B_random_B_other_task_Flickr
+# EXP_ID=POS_B_random_B_other_task_Flickr
 # EXP_ID=exp_POS_B_random_B_other_task_random
 # TRANSFER_IMG="placeholder"
 
-EXP_ID=exp_POS_A_animeGAN_A
-TRANSFER_IMG="/hhd3/ld/data/ade20k/AnimeGANv2/training/ADE_train_00009574_animeGAN.png"
-# EXP_ID=exp_POS_B_animeGAN_B
-# TRANSFER_IMG="/hhd3/ld/data/ade20k/AnimeGANv2/validation/ADE_train_00009574_animeGAN.png"
+# EXP_ID=exp_POS_A_random_A_other_task_coco_gt
+
+# EXP_ID=exp_POS_A_animeGAN_A
+# TRANSFER_IMG="/hhd3/ld/data/ade20k/AnimeGANv2/training/ADE_train_00009574_animeGAN.png"
+EXP_ID=POS_B_animeGAN_B
+TRANSFER_IMG="/hhd3/ld/data/ade20k/AnimeGANv2/validation/ADE_train_00009574_animeGAN.png"
 
 
 SIZE=448
@@ -48,7 +50,7 @@ CKPT_PATH="/hhd3/ld/checkpoint/ckpt_Painter/painter_vit_large.pth"
 DST_DIR="/hhd3/ld/data/ade20k/output/ade20k_seg_inference_${CKPT_FILE}_${PROMPT}_${EXP_ID}"
 
 # inference
-CUDA_VISIBLE_DEVICES=4,1,2,3 python -m torch.distributed.launch --nproc_per_node=${NUM_GPUS} --master_port=${MASTER_PORT} --use_env \
+CUDA_VISIBLE_DEVICES=0,1,4,5 python -m torch.distributed.launch --nproc_per_node=${NUM_GPUS} --master_port=${MASTER_PORT} --use_env \
   eval/ade20k_semantic/painter_inference_segm_exp_components.py \
   --model ${MODEL} --prompt ${PROMPT} \
   --ckpt_path ${CKPT_PATH} --input_size ${SIZE} \
