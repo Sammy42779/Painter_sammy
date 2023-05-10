@@ -465,7 +465,7 @@ class Painter(nn.Module):
             loss = (pred - target) ** 2.
         elif self.loss_func == "smoothl1":
             loss = F.smooth_l1_loss(pred, target, reduction="none", beta=0.01)
-        loss = (loss * mask).sum() / (mask.sum() + 1e-2)  # mean loss on removed patches
+        loss = (loss * mask).sum() / (mask.sum() + 1e-2)  # mean loss on removed patches  只考虑D图的loss
         return loss
 
     def forward(self, imgs, tgts, bool_masked_pos=None, valid=None):
