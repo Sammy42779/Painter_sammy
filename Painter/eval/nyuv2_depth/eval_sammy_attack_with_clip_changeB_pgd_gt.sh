@@ -28,14 +28,14 @@ ATTACK=PGD
 STEP=10
 
 
-
+"""还没改！！！！！！！！"""
 
 MODEL="painter_vit_large_patch16_input896x448_win_dec64_8glb_sl1"
 CKPT_PATH="/hhd3/ld/checkpoint/ckpt_Painter/painter_vit_large.pth"
 # DST_DIR="/hhd3/ld/data/nyu_depth_v2/output_attack_changeB/${ATTACK}_${STEP}/${ATTACK_ID}_${EPSILON}"
 
-DST_DIR="/hhd3/ld/data/nyu_depth_v2/reimp_${ATTACK}${STEP}_${EPSILON}/changeB_1/${ATTACK_ID}/"
-SAVE_DATA_PATH="/hhd3/ld/data/Painter_root/nyu_depth/reimp_${ATTACK}${STEP}_${EPSILON}/changeB_1/${ATTACK_ID}/"
+DST_DIR="/hhd3/ld/data/nyu_depth_v2/gt_exp/reimp_${ATTACK}${STEP}_${EPSILON}/changeB_1/${ATTACK_ID}/"
+SAVE_DATA_PATH="/hhd3/ld/data/Painter_root/nyu_depth/gt_exp/reimp_${ATTACK}${STEP}_${EPSILON}/changeB_1/${ATTACK_ID}/"
 
 # inference
 CUDA_VISIBLE_DEVICES=5 python eval/nyuv2_depth/painter_inference_depth_attack_with_clip_changeB.py \

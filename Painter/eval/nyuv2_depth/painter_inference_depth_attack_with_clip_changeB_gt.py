@@ -107,6 +107,9 @@ def get_args_parser():
 
 
 if __name__ == '__main__':
+
+    print('painter_inference_depth_attack_with_clip_changeB_gt.py')
+
     args = get_args_parser()
 
     ckpt_path = args.ckpt_path
@@ -150,7 +153,9 @@ if __name__ == '__main__':
     for img_path in tqdm.tqdm(img_path_list):
         room_name = img_path.split("/")[-2]
         img_name = img_path.split("/")[-1].split(".")[0]
-        out_path = dst_dir + "/" + room_name + "_" + img_name + ".png"
+        out_path = dst_dir + "/" + room_name + "_" + img_name + ".png"  
+        gt_path = img_src_dir + room_name + "/" + img_name.replace('rgb', 'sync_depth') + ".png"  
+
         img = Image.open(img_path).convert("RGB")
         size = img.size
         img = img.resize((res, hres))
@@ -164,7 +169,7 @@ if __name__ == '__main__':
         # img = img - imagenet_mean
         # img = img / imagenet_std
 
-        tgt = Image.open(tgt_path)
+        tgt = Image.open(gt_path)   ################################## 替换成真实的gt
         tgt = np.array(tgt) / 10000.
         tgt = tgt * 255
         tgt = Image.fromarray(tgt).convert("RGB")

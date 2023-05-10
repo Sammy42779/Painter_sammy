@@ -31,7 +31,6 @@ import models_painter
 sys.path.append('/ssd1/ld/ICCV2023/Painter_sammy/Painter/eval')
 from attack_utils_with_clip import *
 from constant_utils import *
-from exp_components_utils import *
 
 
 imagenet_mean = np.array([0.485, 0.456, 0.406])
@@ -87,7 +86,7 @@ def run_one_image(img, tgt, size, model, out_path, device):
 def get_args_parser():
     parser = argparse.ArgumentParser('NYU Depth V2', add_help=False)
     parser.add_argument('--ckpt_path', type=str, help='path to ckpt',
-                        default='')
+                        default='/hhd3/ld/checkpoint/ckpt_Painter/painter_vit_large.pth')
     parser.add_argument('--model', type=str, help='dir to ckpt',
                         default='painter_vit_large_patch16_input896x448_win_dec64_8glb_sl1')
     parser.add_argument('--prompt', type=str, help='prompt image in train set',
@@ -107,6 +106,9 @@ def get_args_parser():
 
 
 if __name__ == '__main__':
+
+    print('painter_inference_depth_attack_with_clip_gt.py')
+
     args = get_args_parser()
 
     ckpt_path = args.ckpt_path
@@ -131,10 +133,8 @@ if __name__ == '__main__':
 
     img_src_dir = "/hhd3/ld/data/nyu_depth_v2/official_splits/test/"
     img_path_list = glob.glob(img_src_dir + "/*/rgb*g")
-    # img2_path = "/hhd3/ld/data/nyu_depth_v2/sync/{}.jpg".format(args.prompt)
-    img2_path = random.choice(COCO_LIST_B)
+    img2_path = "/hhd3/ld/data/nyu_depth_v2/sync/{}.jpg".format(args.prompt)
     tgt_path = "/hhd3/ld/data/nyu_depth_v2/sync/{}.png".format(args.prompt.replace('rgb', 'sync_depth'))
-    # tgt_path = random.choice(NYU_LIST_B)
     tgt2_path = tgt_path
 
     res, hres = args.input_size, args.input_size
@@ -150,7 +150,9 @@ if __name__ == '__main__':
     for img_path in tqdm.tqdm(img_path_list):
         room_name = img_path.split("/")[-2]
         img_name = img_path.split("/")[-1].split(".")[0]
-        out_path = dst_dir + "/" + room_name + "_" + img_name + ".png"
+        out_path = dst_dir + "/" + room_name + "_" + img_name + ".png"  
+        gt_path = img_src_dir + room_name + "/" + img_name.replace('rgb', 'sync_depth') + ".png"  
+
         img = Image.open(img_path).convert("RGB")
         size = img.size
         img = img.resize((res, hres))
@@ -164,7 +166,7 @@ if __name__ == '__main__':
         # img = img - imagenet_mean
         # img = img / imagenet_std
 
-        tgt = Image.open(tgt_path)
+        tgt = Image.open(gt_path)   ################################## 替换成真实的gt
         tgt = np.array(tgt) / 10000.
         tgt = tgt * 255
         tgt = Image.fromarray(tgt).convert("RGB")
