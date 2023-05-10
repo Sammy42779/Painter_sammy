@@ -390,7 +390,7 @@ def construct_adv_BC_pgd(img, tgt, model, device, epsilon, num_steps, step_size,
     tgt = reshape(tgt)
 
     mask_x = torch.zeros_like(x)
-    mask_x[:,:,448:,:] = 1  # A图, 只保留前半部分  [检查] mask的位置是上半部分还是下半部分 上部分是[:,:,:448,:], 下部分是[:,:,448:,:]
+    mask_x[:,:,448:,:] = 1  # C图, 只保留后半部分  [检查] mask的位置是上半部分还是下半部分 上部分是[:,:,:448,:], 下部分是[:,:,448:,:]
 
     mask_tgt = torch.zeros_like(tgt)
     mask_tgt[:,:,:448,:] = 1   # [检查] mask的位置是上半部分还是下半部分 上部分是[:,:,:448,:], 下部分是[:,:,448:,:]
