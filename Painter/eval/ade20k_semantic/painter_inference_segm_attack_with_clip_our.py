@@ -19,19 +19,21 @@ import torch.nn.functional as F
 import numpy as np
 import glob
 import tqdm
+import random
 
 import matplotlib.pyplot as plt
 from PIL import Image
 import torch.distributed as dist
 from torch.utils.data import DataLoader, DistributedSampler
 
-sys.path.append('.')
+sys.path.append('/ssd1/ld/ICCV2023/Painter_sammy/Painter')
 import models_painter
 from util.ddp_utils import DatasetTest
 from util import ddp_utils
 
 sys.path.append('/ssd1/ld/ICCV2023/Painter_sammy/Painter/eval')
-from attack_utils import *
+from attack_utils_with_clip import *
+from constant_utils import *
 
 
 imagenet_mean = np.array([0.485, 0.456, 0.406])
@@ -40,7 +42,7 @@ imagenet_std = np.array([0.229, 0.224, 0.225])
 
 def get_args_parser():
     parser = argparse.ArgumentParser('ADE20k semantic segmentation', add_help=False)
-    parser.add_argument('--ckpt_path', type=str, help='path to ckpt', default='')
+    parser.add_argument('--ckpt_path', type=str, help='path to ckpt', default='/hhd3/ld/checkpoint/ckpt_Painter/painter_vit_large.pth')
     parser.add_argument('--model', type=str, help='dir to ckpt',
                         default='painter_vit_large_patch16_input896x448_win_dec64_8glb_sl1')
     parser.add_argument('--prompt', type=str, help='prompt image in train set',
@@ -52,10 +54,14 @@ def get_args_parser():
                         help='number of distributed processes')
     parser.add_argument('--dist_url', default='env://', help='url used to set up distributed training')
     
-    parser.add_argument('--alpha', default=8, type=int,
+    parser.add_argument('--epsilon', default=8, type=int,
                     help='max perturbation (default: 8), need to divide by 255')
-    parser.add_argument('--attack_id', type=str, default='attack_A')
-    
+    parser.add_argument('--attack_id', type=str, default='attack_AC')
+    parser.add_argument('--attack_method', type=str, default='PGD')
+    parser.add_argument('--num_steps', default=5, type=int)
+
+    parser.add_argument('--dst_dir', type=str, default='dst_dir')
+    parser.add_argument('--save_data_path', type=str, default='save_data_path')
     
     return parser.parse_args()
 
@@ -90,7 +96,9 @@ def run_one_image(img, tgt, size, model, out_path, device):
     bool_masked_pos = bool_masked_pos.unsqueeze(dim=0)
 
     valid = torch.ones_like(tgt)
-    loss, y, mask = model(x.float().to(device), tgt.float().to(device), bool_masked_pos.to(device), valid.float().to(device))
+    ### 进模型之前normalize 同时normalize img and tgt
+    # loss, y, mask = model(x.float().to(device), tgt.float().to(device), bool_masked_pos.to(device), valid.float().to(device))
+    loss, y, mask = model(images_normalize(x).float().to(device), images_normalize(tgt).float().to(device), bool_masked_pos.to(device), valid.float().to(device))
     y = model.module.unpatchify(y)
     y = torch.einsum('nchw->nhwc', y).detach().cpu()
 
@@ -103,6 +111,7 @@ def run_one_image(img, tgt, size, model, out_path, device):
 
 
 if __name__ == '__main__':
+
     dataset_dir = "/hhd3/ld/data/"
     args = get_args_parser()
     args = ddp_utils.init_distributed_mode(args)
@@ -115,10 +124,11 @@ if __name__ == '__main__':
 
     path_splits = ckpt_path.split('/')
     ckpt_dir, ckpt_file = path_splits[-2], path_splits[-1]
-    # dst_dir = os.path.join('models_inference', ckpt_dir,
-    #                        "ade20k_semseg_inference_{}_{}_size{}/".format(ckpt_file, prompt, input_size))
-    dst_dir = os.path.join('/hhd3/ld/data/ade20k/'
-                           "ade20k_seg_inference_{}_{}/{}_{}".format(ckpt_file, args.prompt))
+    # dst_dir = os.path.join('/hhd3/ld/data/ade20k/output_attack/'
+    #                        "ade20k_seg_inference_{}_{}_{}/".format(ckpt_file, args.prompt, args.exp_id))
+    # dst_dir = os.path.join(f'/hhd3/ld/data/ade20k/output_attack/{args.attack_method}_{args.num_steps}/'
+    #                        "{}_{}".format(args.attack_id, args.epsilon))
+    dst_dir = args.dst_dir
     print(f'----------dst_dir: {dst_dir}----------')
 
     if ddp_utils.get_rank() == 0:
@@ -152,28 +162,50 @@ if __name__ == '__main__':
     tgt2 = tgt2.resize((input_size, input_size))
     tgt2 = np.array(tgt2) / 255.
 
+    i = 0
+    SEED = random.choice(np.arange(len(data_loader_val)))
+
+    # save_data_path = f'/hhd3/ld/data/Painter_root/ade20k_semantic/attack_analysis/{args.attack_id}_{args.epsilon}/'
+    save_data_path = args.save_data_path
+    os.makedirs(save_data_path, exist_ok=True)
+
     model_painter.eval()
     for data in tqdm.tqdm(data_loader_val):
         """ Load an image """
         assert len(data) == 1
-        img, img_path, size = data[0]
+        img, img_path, size = data[0]  
+
+        ### 此时的数据都是0-1范围内的数据
+
         img_name = os.path.basename(img_path)
         out_path = os.path.join(dst_dir, img_name.replace('.jpg', '.png'))
 
         img = np.concatenate((img2, img), axis=0)
         assert img.shape == (input_size * 2, input_size, 3)
         # normalize by ImageNet mean and std
-        img = img - imagenet_mean
-        img = img / imagenet_std
+        # img = img - imagenet_mean
+        # img = img / imagenet_std
 
         tgt = tgt2  # tgt is not available
         tgt = np.concatenate((tgt2, tgt), axis=0)
 
         assert tgt.shape == (input_size * 2, input_size, 3)
         # normalize by ImageNet mean and std
-        tgt = tgt - imagenet_mean
-        tgt = tgt / imagenet_std
+        # tgt = tgt - imagenet_mean
+        # tgt = tgt / imagenet_std
 
         # make random mask reproducible (comment out to make it change)
         torch.manual_seed(2)
-        run_one_image(img, tgt, size, model_painter, out_path, device)
+
+        adv_img, adv_tgt = get_adv_img_adv_tgt(img, tgt, model_painter, device, args.attack_id, args.attack_method, epsilon=args.epsilon, num_steps=args.num_steps, is_ours=True)
+
+        if i == SEED:
+            np.save(f'{save_data_path}/img2_prompt.npy', img)
+            np.save(f'{save_data_path}/img2_prompt_adv.npy', adv_img)
+            np.save(f'{save_data_path}/tgt2_prompt.npy', tgt)
+            np.save(f'{save_data_path}/tgt2_prompt_adv.npy', adv_tgt)
+        i += 1
+
+        ### 这里出来的对抗样本的范围还是0-1之间, 然后在进入模型之前再做normalize
+
+        run_one_image(adv_img, adv_tgt, size, model_painter, out_path, device)
