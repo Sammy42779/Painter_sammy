@@ -50,8 +50,15 @@ def get_args_parser():
     parser.add_argument('--world_size', default=1, type=int,
                         help='number of distributed processes')
     parser.add_argument('--dist_url', default='env://', help='url used to set up distributed training')
-    parser.add_argument('--exp_id', type=str, default='exp_mapping_1_1_a')
-    parser.add_argument('--transfer_img', type=str, default='animeGAN')
+    
+    parser.add_argument('--exp_id', type=str, default='baseline')
+    parser.add_argument('--transfer_img_A', type=str, default='animeGAN')
+    parser.add_argument('--transfer_img_B', type=str, default='animeGAN')
+
+    parser.add_argument('--dst_dir', type=str, default='dst_dir')
+    parser.add_argument('--save_data_path', type=str, default='save_data_path')
+
+    
     return parser.parse_args()
 
 
@@ -112,8 +119,7 @@ if __name__ == '__main__':
     ckpt_dir, ckpt_file = path_splits[-2], path_splits[-1]
     # dst_dir = os.path.join('models_inference', ckpt_dir,
     #                        "ade20k_semseg_inference_{}_{}_size{}/".format(ckpt_file, prompt, input_size))
-    dst_dir = os.path.join('/hhd3/ld/data/ade20k/output_attack/'
-                           "ade20k_seg_inference_{}_{}_{}/".format(ckpt_file, args.prompt, args.exp_id))
+    dst_dir = args.dst_dir
     print(f'----------dst_dir: {dst_dir}----------')
 
     if ddp_utils.get_rank() == 0:
@@ -140,13 +146,13 @@ if __name__ == '__main__':
     """
     修改prompt, 即 A B 图
     """
-    img2, tgt2 = get_prompt_gt(img2_path, tgt2_path, input_size, args.exp_id, args.transfer_img, task='ade20k_segment')
+    img2, tgt2 = get_prompt_gt(img2_path, tgt2_path, input_size, args.exp_id, args.transfer_img_A, args.transfer_img_B, task='ade20k_segment')
 
     
     ## 保存实验图
     i = 0
     SEED = random.choice(np.arange(len(data_loader_val)))
-    save_data_path = f'/hhd3/ld/data/Painter_root/ade20k_semantic/component_analysis/'
+    save_data_path = args.save_data_path
     os.makedirs(save_data_path, exist_ok=True)
 
     model_painter.eval()
@@ -174,7 +180,6 @@ if __name__ == '__main__':
         if i == SEED:
             np.save(f'{save_data_path}/img2_prompt_{args.exp_id}.npy', img)
             np.save(f'{save_data_path}/tgt2_prompt_{args.exp_id}.npy', tgt)
-            print('%%%%%%%%%%%Finished save imgs')
         i += 1
 
         # make random mask reproducible (comment out to make it change)
