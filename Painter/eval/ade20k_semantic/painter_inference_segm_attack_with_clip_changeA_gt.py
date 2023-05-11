@@ -32,7 +32,7 @@ from util.ddp_utils import DatasetTest
 from util import ddp_utils
 
 sys.path.append('/ssd1/ld/ICCV2023/Painter_sammy/Painter/eval')
-from attack_utils_with_clip import *
+from attack_utils_with_clip_basic import *
 from constant_utils import *
 from exp_components_utils import *
 
@@ -190,7 +190,14 @@ if __name__ == '__main__':
         # img = img - imagenet_mean
         # img = img / imagenet_std
 
-        tgt = tgt2  # tgt is not available
+        # tgt = tgt2  # tgt is not available
+        # tgt = gt_path
+        gt_name = img_name.replace('.jpg', '.png')
+        gt_path = f'/hhd3/ld/data/ade20k/annotations_with_color/validation/{gt_name}' 
+        tgt = Image.open(gt_path)
+        tgt = tgt.resize((input_size, input_size))
+        tgt = np.array(tgt) / 255.
+        
         tgt = np.concatenate((tgt2, tgt), axis=0)
 
         assert tgt.shape == (input_size * 2, input_size, 3)

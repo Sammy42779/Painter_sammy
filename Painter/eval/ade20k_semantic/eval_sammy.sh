@@ -22,7 +22,7 @@ CKPT_PATH="/hhd3/ld/checkpoint/ckpt_Painter/painter_vit_large.pth"
 DST_DIR="/hhd3/ld/data/ade20k/ade20k_seg_inference_${CKPT_FILE}_${PROMPT}"
 
 # inference
-CUDA_VISIBLE_DEVICES=1,3,4 python -m torch.distributed.launch --nproc_per_node=${NUM_GPUS} --master_port=2000 --use_env \
+CUDA_VISIBLE_DEVICES=0,1,4 python -m torch.distributed.launch --nproc_per_node=${NUM_GPUS} --master_port=2000 --use_env \
   eval/ade20k_semantic/painter_inference_segm.py \
   --model ${MODEL} --prompt ${PROMPT} \
   --ckpt_path ${CKPT_PATH} --input_size ${SIZE}

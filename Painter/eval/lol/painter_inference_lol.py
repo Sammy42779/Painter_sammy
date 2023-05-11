@@ -23,7 +23,7 @@ import tqdm
 import matplotlib.pyplot as plt
 from PIL import Image
 
-sys.path.append('.')
+sys.path.append('/ssd1/ld/ICCV2023/Painter_sammy/Painter')
 import models_painter
 
 from skimage.metrics import peak_signal_noise_ratio as psnr_loss
@@ -79,7 +79,7 @@ def myPSNR(tar_img, prd_img):
 
 def get_args_parser():
     parser = argparse.ArgumentParser('low-light enhancement', add_help=False)
-    parser.add_argument('--ckpt_path', type=str, help='path to ckpt', default='')
+    parser.add_argument('--ckpt_path', type=str, help='path to ckpt', default='/hhd3/ld/checkpoint/ckpt_Painter/painter_vit_large.pth')
     parser.add_argument('--model', type=str, help='dir to ckpt',
                         default='painter_vit_large_patch16_input896x448_win_dec64_8glb_sl1')
     parser.add_argument('--prompt', type=str, help='prompt image in train set',
@@ -93,6 +93,8 @@ def get_args_parser():
 if __name__ == '__main__':
     args = get_args_parser()
 
+    os.environ['CUDA_VISIBLE_DEVICES'] = '5'
+
     ckpt_path = args.ckpt_path
     model = args.model
     prompt = args.prompt
@@ -100,7 +102,7 @@ if __name__ == '__main__':
 
     path_splits = ckpt_path.split('/')
     ckpt_dir, ckpt_file = path_splits[-2], path_splits[-1]
-    dst_dir = os.path.join('models_inference', ckpt_dir.split('/')[-1],
+    dst_dir = os.path.join('/hhd3/ld/data/light_enhance/output', ckpt_dir.split('/')[-1],
                            "lol_inference_{}_{}".format(ckpt_file, os.path.basename(prompt).split(".")[0]))
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
@@ -112,11 +114,11 @@ if __name__ == '__main__':
     device = torch.device("cuda")
     model_painter.to(device)
 
-    img_src_dir = "datasets/light_enhance/eval15/low"
+    img_src_dir = "/hhd3/ld/data/light_enhance/eval15/low"
     img_path_list = glob.glob(os.path.join(img_src_dir, "*.png"))
 
-    img2_path = "datasets/light_enhance/our485/low/{}.png".format(prompt)
-    tgt2_path = "datasets/light_enhance/our485/high/{}.png".format(prompt)
+    img2_path = "/hhd3/ld/data/light_enhance/our485/low/{}.png".format(prompt)
+    tgt2_path = "/hhd3/ld/data/light_enhance/our485/high/{}.png".format(prompt)
     print('prompt: {}'.format(tgt2_path))
 
     # load the shared prompt image pair
@@ -166,7 +168,8 @@ if __name__ == '__main__':
         rgb_restored = np.clip(rgb_restored, 0, 1)
 
         psnr = psnr_loss(rgb_restored, rgb_gt)
-        ssim = ssim_loss(rgb_restored, rgb_gt, multichannel=True)
+        # ssim = ssim_loss(rgb_restored, rgb_gt, multichannel=True)
+        ssim = ssim_loss(rgb_restored, rgb_gt, channel_axis=2, data_range=1.0)
         psnr_val_rgb.append(psnr)
         ssim_val_rgb.append(ssim)
         print("PSNR:", psnr, ", SSIM:", ssim, img_name, rgb_restored.shape)

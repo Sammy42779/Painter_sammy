@@ -32,7 +32,7 @@ from skimage.metrics import structural_similarity as ssim_loss
 
 
 sys.path.append('/ssd1/ld/ICCV2023/Painter_sammy/Painter/eval')
-from attack_utils_with_clip import *
+from attack_utils_with_clip_basic import *
 from constant_utils import *
 
 
@@ -98,7 +98,7 @@ def get_args_parser():
                     help='max perturbation (default: 8), need to divide by 255')
     parser.add_argument('--attack_id', type=str, default='attack_AB')
     parser.add_argument('--attack_method', type=str, default='PGD')
-    parser.add_argument('--num_steps', default=5, type=int)
+    parser.add_argument('--num_steps', default=10, type=int)
 
     parser.add_argument('--dst_dir', type=str, default='dst_dir')
     parser.add_argument('--save_data_path', type=str, default='save_data_path')
@@ -108,7 +108,7 @@ def get_args_parser():
 
 if __name__ == '__main__':
 
-    # os.environ['CUDA_VISIBLE_DEVICES'] = '5'
+    # os.environ['CUDA_VISIBLE_DEVICES'] = '6'
 
     args = get_args_parser()
 
@@ -190,7 +190,8 @@ if __name__ == '__main__':
         # make random mask reproducible (comment out to make it change)
         torch.manual_seed(2)
 
-        adv_img, adv_tgt = get_adv_img_adv_tgt(img, tgt, model_painter, device, args.attack_id, args.attack_method, epsilon=args.epsilon, num_steps=args.num_steps, is_ours=True)
+        print('%%%%%%%%%%%get_adv_img_adv_tgt_our%%%%%%%%%%%')
+        adv_img, adv_tgt = get_adv_img_adv_tgt_our(img, tgt, model_painter, device, args.attack_id, args.attack_method, epsilon=args.epsilon, num_steps=args.num_steps)
 
         if i == SEED:
             np.save(f'{save_data_path}/img2_prompt.npy', img)

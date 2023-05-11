@@ -32,9 +32,9 @@ from skimage.metrics import structural_similarity as ssim_loss
 
 
 sys.path.append('/ssd1/ld/ICCV2023/Painter_sammy/Painter/eval')
-from attack_utils_with_clip import *
+from attack_utils_with_clip_our import *
 from constant_utils import *
-from exp_components_utils import *
+
 
 imagenet_mean = np.array([0.485, 0.456, 0.406])
 imagenet_std = np.array([0.229, 0.224, 0.225])
@@ -97,16 +97,16 @@ def get_args_parser():
     parser.add_argument('--epsilon', default=8, type=int,
                     help='max perturbation (default: 8), need to divide by 255')
     parser.add_argument('--attack_id', type=str, default='attack_C')
-    parser.add_argument('--attack_method', type=str, default='FGSM')
-    parser.add_argument('--num_steps', default=5, type=int)
-
-    parser.add_argument('--dst_dir', type=str, default='dst_dir')
-    parser.add_argument('--save_data_path', type=str, default='save_data_path')
+    parser.add_argument('--attack_method', type=str, default='PGD')
+    parser.add_argument('--num_steps', default=10, type=int)
 
     return parser.parse_args()
 
 
 if __name__ == '__main__':
+
+    # os.environ['CUDA_VISIBLE_DEVICES'] = '5'
+
     args = get_args_parser()
 
     ckpt_path = args.ckpt_path
@@ -116,13 +116,15 @@ if __name__ == '__main__':
 
     path_splits = ckpt_path.split('/')
     ckpt_dir, ckpt_file = path_splits[-2], path_splits[-1]
-    # dst_dir = os.path.join(f'/hhd3/ld/data/light_enhance/output_attack1/{args.attack_method}/'
-    #                        "{}_{}".format(args.attack_id, args.epsilon))
-    dst_dir = args.dst_dir
+    dst_dir = os.path.join(f'/hhd3/ld/data/light_enhance/our_attack/{args.attack_method}/'
+                           "{}_{}".format(args.attack_id, args.epsilon))
     print(f'----------dst_dir: {dst_dir}----------')
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
     print("output_dir: {}".format(dst_dir))
+
+    save_data_path = f'/hhd3/ld/data/Painter_root/lol_enhance/our_attack_analysis/{args.attack_method}/{args.attack_id}_{args.epsilon}/'
+    os.makedirs(save_data_path, exist_ok=True)
 
     model_painter = prepare_model(ckpt_path, model)
     print('Model loaded.')
@@ -133,12 +135,8 @@ if __name__ == '__main__':
     img_src_dir = "/hhd3/ld/data/light_enhance/eval15/low"
     img_path_list = glob.glob(os.path.join(img_src_dir, "*.png"))
 
-    ## A图
     img2_path = "/hhd3/ld/data/light_enhance/our485/low/{}.png".format(prompt)
-    # img2_path = random.choice(COCO_LIST_B)
-    ## B图
-    # tgt2_path = "/hhd3/ld/data/light_enhance/our485/high/{}.png".format(prompt)
-    tgt2_path = random.choice(LOL_LIST_B)
+    tgt2_path = "/hhd3/ld/data/light_enhance/our485/high/{}.png".format(prompt)
     print('prompt: {}'.format(tgt2_path))
 
     # load the shared prompt image pair
@@ -157,9 +155,7 @@ if __name__ == '__main__':
     i = 0
     SEED = random.choice(np.arange(len(img_path_list)))
 
-    # save_data_path = f'/hhd3/ld/data/Painter_root/lol_enhance/attack_analysis/{args.attack_id}_{args.epsilon}/'
-    save_data_path = args.save_data_path
-    os.makedirs(save_data_path, exist_ok=True)
+
 
     for img_path in tqdm.tqdm(img_path_list):
         """ Load an image """

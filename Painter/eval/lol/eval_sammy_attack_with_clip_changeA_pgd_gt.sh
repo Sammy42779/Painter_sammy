@@ -6,8 +6,8 @@
 # ATTACK_ID=attack_B
 # ATTACK_ID=attack_C
 # ATTACK_ID=attack_AB
-ATTACK_ID=attack_AC
-# ATTACK_ID=attack_BC
+# ATTACK_ID=attack_AC
+ATTACK_ID=attack_BC
 # ATTACK_ID=attack_ABC
 # ATTACK_ID=none
 EPSILON=8
@@ -19,11 +19,11 @@ STEP=10
 
 
 #### PGD10步 2mins
-DST_DIR="/hhd3/ld/data/light_enhance/reimp_${ATTACK}${STEP}_${EPSILON}/changeB_2/${ATTACK_ID}/"
-SAVE_DATA_PATH="/hhd3/ld/data/Painter_root/lol_enhance/reimp_${ATTACK}${STEP}_${EPSILON}/changeB_2/${ATTACK_ID}/"
+DST_DIR="/hhd3/ld/data/light_enhance/gt_exp/reimp_${ATTACK}${STEP}_${EPSILON}/changeA/${ATTACK_ID}/"
+SAVE_DATA_PATH="/hhd3/ld/data/Painter_root/lol_enhance/gt_exp/reimp_${ATTACK}${STEP}_${EPSILON}/changeA/${ATTACK_ID}/"
 
 
-CUDA_VISIBLE_DEVICES=2 python eval/lol/painter_inference_lol_attack_with_clip_changeB.py \
+CUDA_VISIBLE_DEVICES=0 python eval/lol/painter_inference_lol_attack_with_clip_changeA_gt.py \
     --ckpt_path /hhd3/ld/checkpoint/ckpt_Painter/painter_vit_large.pth \
     --attack_id ${ATTACK_ID} \
     --epsilon ${EPSILON} \
@@ -33,4 +33,5 @@ CUDA_VISIBLE_DEVICES=2 python eval/lol/painter_inference_lol_attack_with_clip_ch
     --save_data_path ${SAVE_DATA_PATH}
 
 
-## bash eval/lol/eval_sammy_attack_with_clip_changeB_pgd.sh
+
+## bash eval/lol/eval_sammy_attack_with_clip_changeA_pgd_gt.sh

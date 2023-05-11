@@ -32,9 +32,8 @@ from util.ddp_utils import DatasetTest
 from util import ddp_utils
 
 sys.path.append('/ssd1/ld/ICCV2023/Painter_sammy/Painter/eval')
-from attack_utils_with_clip import *
+from attack_utils_with_clip_basic import *
 from constant_utils import *
-from exp_components_utils import *
 
 
 imagenet_mean = np.array([0.485, 0.456, 0.406])
@@ -60,11 +59,10 @@ def get_args_parser():
     parser.add_argument('--attack_id', type=str, default='attack_AC')
     parser.add_argument('--attack_method', type=str, default='PGD')
     parser.add_argument('--num_steps', default=5, type=int)
-    
+
     parser.add_argument('--dst_dir', type=str, default='dst_dir')
     parser.add_argument('--save_data_path', type=str, default='save_data_path')
-
-
+    
     return parser.parse_args()
 
 
@@ -128,7 +126,7 @@ if __name__ == '__main__':
     ckpt_dir, ckpt_file = path_splits[-2], path_splits[-1]
     # dst_dir = os.path.join('/hhd3/ld/data/ade20k/output_attack/'
     #                        "ade20k_seg_inference_{}_{}_{}/".format(ckpt_file, args.prompt, args.exp_id))
-    # dst_dir = os.path.join(f'/hhd3/ld/data/ade20k/output_attack_change_A/{args.attack_method}_{args.num_steps}/'
+    # dst_dir = os.path.join(f'/hhd3/ld/data/ade20k/output_attack/{args.attack_method}_{args.num_steps}/'
     #                        "{}_{}".format(args.attack_id, args.epsilon))
     dst_dir = args.dst_dir
     print(f'----------dst_dir: {dst_dir}----------')
@@ -151,13 +149,10 @@ if __name__ == '__main__':
     data_loader_val = DataLoader(dataset_val, batch_size=1, sampler=sampler_val,
                                  drop_last=False, collate_fn=ddp_utils.collate_fn, num_workers=2)
 
-    ## A图
     img2_path = dataset_dir + "ade20k/images/training/{}.jpg".format(prompt)
-    ## B图
-    # tgt2_path = dataset_dir + "ade20k/annotations_with_color/training/{}.png".format(prompt)
-    tgt2_path = random.choice(ADE20K_LIST_B)
+    tgt2_path = dataset_dir + "ade20k/annotations_with_color/training/{}.png".format(prompt)
 
-    # load the shared prompt image pair  
+    # load the shared prompt image pair
     img2 = Image.open(img2_path).convert("RGB")
     img2 = img2.resize((input_size, input_size))
     img2 = np.array(img2) / 255.
@@ -170,7 +165,7 @@ if __name__ == '__main__':
     i = 0
     SEED = random.choice(np.arange(len(data_loader_val)))
 
-    # save_data_path = f'/hhd3/ld/data/Painter_root/ade20k_semantic/change_A/{args.attack_id}_{args.epsilon}/'
+    # save_data_path = f'/hhd3/ld/data/Painter_root/ade20k_semantic/attack_analysis/{args.attack_id}_{args.epsilon}/'
     save_data_path = args.save_data_path
     os.makedirs(save_data_path, exist_ok=True)
 
@@ -179,6 +174,9 @@ if __name__ == '__main__':
         """ Load an image """
         assert len(data) == 1
         img, img_path, size = data[0]  
+
+        # print(gt_path, img_path, os.path.basename(img_path))
+        # break
 
         ### 此时的数据都是0-1范围内的数据
 
@@ -191,7 +189,14 @@ if __name__ == '__main__':
         # img = img - imagenet_mean
         # img = img / imagenet_std
 
-        tgt = tgt2  # tgt is not available
+        # tgt = tgt2  # tgt is not available
+        # tgt = gt_path
+        gt_name = img_name.replace('.jpg', '.png')
+        gt_path = f'/hhd3/ld/data/ade20k/annotations_with_color/validation/{gt_name}' 
+        tgt = Image.open(gt_path)
+        tgt = tgt.resize((input_size, input_size))
+        tgt = np.array(tgt) / 255.
+        
         tgt = np.concatenate((tgt2, tgt), axis=0)
 
         assert tgt.shape == (input_size * 2, input_size, 3)

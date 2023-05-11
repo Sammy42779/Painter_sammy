@@ -32,7 +32,7 @@ from skimage.metrics import structural_similarity as ssim_loss
 
 
 sys.path.append('/ssd1/ld/ICCV2023/Painter_sammy/Painter/eval')
-from attack_utils_with_clip import *
+from attack_utils_with_clip_basic import *
 from constant_utils import *
 
 

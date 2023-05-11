@@ -17,18 +17,18 @@
 
 set -x
 
-NUM_GPUS=1
+NUM_GPUS=5
 JOB_NAME="painter_vit_large"
 CKPT_FILE="painter_vit_large.pth"
 PROMPT=ADE_train_00009574
 
 # ATTACK_ID=attack_A
 # ATTACK_ID=attack_B
-ATTACK_ID=attack_C
+# ATTACK_ID=attack_C
 # ATTACK_ID=attack_AB
 # ATTACK_ID=attack_AC
 # ATTACK_ID=attack_BC
-# ATTACK_ID=attack_ABC
+ATTACK_ID=attack_ABC
 # ATTACK_ID=none
 
 EPSILON=8
@@ -45,11 +45,11 @@ CKPT_PATH="/hhd3/ld/checkpoint/ckpt_Painter/painter_vit_large.pth"
 # DST_DIR="models_inference/${JOB_NAME}/ade20k_semseg_inference_${CKPT_FILE}_${PROMPT}_size${SIZE}"
 # DST_DIR="/hhd3/ld/data/ade20k/output_attack/${ATTACK}/${ATTACK_ID}_${EPSILON}"
 # DST_DIR="/hhd3/ld/data/ade20k/output_attack/${ATTACK}_${STEP}/${ATTACK_ID}_${EPSILON}"
-DST_DIR="/hhd3/ld/data/ade20k/reimp_${ATTACK}${STEP}_${EPSILON}/${ATTACK_ID}/"
-SAVE_DATA_PATH="/hhd3/ld/data/Painter_root/ade20k_semantic/reimp_${ATTACK}${STEP}_${EPSILON}/${ATTACK_ID}/"
+DST_DIR="/hhd3/ld/data/ade20k/reimp_${ATTACK}${STEP}_${EPSILON}_1/${ATTACK_ID}/"
+SAVE_DATA_PATH="/hhd3/ld/data/Painter_root/ade20k_semantic/reimp_${ATTACK}${STEP}_${EPSILON}_1/${ATTACK_ID}/"
 
 # inference
-CUDA_VISIBLE_DEVICES=2 python -m torch.distributed.launch --nproc_per_node=${NUM_GPUS} --master_port=1988 --use_env \
+CUDA_VISIBLE_DEVICES=1,2,3,4,5 python -m torch.distributed.launch --nproc_per_node=${NUM_GPUS} --master_port=1998 --use_env \
   eval/ade20k_semantic/painter_inference_segm_attack_with_clip.py \
   --model ${MODEL} --prompt ${PROMPT} \
   --ckpt_path ${CKPT_PATH} --input_size ${SIZE} \
@@ -62,7 +62,7 @@ CUDA_VISIBLE_DEVICES=2 python -m torch.distributed.launch --nproc_per_node=${NUM
 
 
 # postprocessing and eval
-CUDA_VISIBLE_DEVICES=2 python eval/ade20k_semantic/ADE20kSemSegEvaluatorCustom.py \
+CUDA_VISIBLE_DEVICES=5 python eval/ade20k_semantic/ADE20kSemSegEvaluatorCustom.py \
   --pred_dir ${DST_DIR}
 
 

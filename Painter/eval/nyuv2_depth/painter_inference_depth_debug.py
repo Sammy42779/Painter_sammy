@@ -88,7 +88,7 @@ def run_one_image(img, tgt, size, model, out_path, device):
     
 
 def get_args_parser():
-    os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
     parser = argparse.ArgumentParser('NYU Depth V2', add_help=False)
     parser.add_argument('--ckpt_path', type=str, help='path to ckpt',
                         default='/hhd3/ld/checkpoint/ckpt_Painter/painter_vit_large.pth')

@@ -4,11 +4,11 @@
 
 # ATTACK_ID=attack_A
 # ATTACK_ID=attack_B
-ATTACK_ID=attack_C
+# ATTACK_ID=attack_C
 # ATTACK_ID=attack_AB
 # ATTACK_ID=attack_AC
 # ATTACK_ID=attack_BC
-# ATTACK_ID=attack_ABC
+ATTACK_ID=attack_ABC
 # ATTACK_ID=none
 EPSILON=8
 # ALPHA=128

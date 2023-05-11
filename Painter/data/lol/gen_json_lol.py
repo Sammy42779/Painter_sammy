@@ -19,7 +19,7 @@ def get_args_parser():
     parser.add_argument('--split', type=str, help='dataset split', 
                         choices=['train', 'val'], required=True)
     parser.add_argument('--output_dir', type=str, help='path to output dir', 
-                        default='datasets/light_enhance')
+                        default='/hhd3/ld/data/light_enhance')
     return parser.parse_args()
 
 
@@ -29,9 +29,9 @@ if __name__ == "__main__":
     save_path = os.path.join(args.output_dir, "enhance_lol_{}.json".format(args.split))
 
     if args.split == 'train':
-        image_dir = "datasets/light_enhance/our485/low/"
+        image_dir = "/hhd3/ld/data/light_enhance/our485/low/"
     elif args.split == 'val':
-        image_dir = "datasets/light_enhance/eval15/low/"
+        image_dir = "/hhd3/ld/data/light_enhance/eval15/low/"
     else:
         raise NotImplementedError
     print(save_path)

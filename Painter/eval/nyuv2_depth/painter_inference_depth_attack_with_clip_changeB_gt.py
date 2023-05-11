@@ -29,7 +29,7 @@ sys.path.append('/ssd1/ld/ICCV2023/Painter_sammy/Painter')
 import models_painter
 
 sys.path.append('/ssd1/ld/ICCV2023/Painter_sammy/Painter/eval')
-from attack_utils_with_clip import *
+from attack_utils_with_clip_basic import *
 from constant_utils import *
 from exp_components_utils import *
 

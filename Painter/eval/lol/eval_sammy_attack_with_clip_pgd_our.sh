@@ -4,8 +4,8 @@
 
 # ATTACK_ID=attack_A
 # ATTACK_ID=attack_B
-# ATTACK_ID=attack_C
-ATTACK_ID=attack_AB
+ATTACK_ID=attack_C
+# ATTACK_ID=attack_AB
 # ATTACK_ID=attack_AC
 # ATTACK_ID=attack_BC
 # ATTACK_ID=attack_ABC
@@ -20,16 +20,16 @@ STEP=10
 TASK=light_enhance
 SAVE_TASK=lol_enhance
 
-METHOD=our_attack
+METHOD=our_attack_gt
 
 PY_FILE=painter_inference_lol_attack_with_clip_our
 
 #### PGD10步 2mins
-DST_DIR="/hhd3/ld/data/${TASK}/${METHOD}/${ATTACK}${STEP}_${EPSILON}/${ATTACK_ID}/"
-SAVE_DATA_PATH="/hhd3/ld/data/Painter_root/${SAVE_TASK}/${METHOD}/${ATTACK}${STEP}_${EPSILON}/${ATTACK_ID}/"
+DST_DIR="/hhd3/ld/data/${TASK}/gt_exp/${METHOD}/${ATTACK}${STEP}_${EPSILON}/${ATTACK_ID}/"
+SAVE_DATA_PATH="/hhd3/ld/data/Painter_root/${SAVE_TASK}/gt_exp/${METHOD}/${ATTACK}${STEP}_${EPSILON}/${ATTACK_ID}/"
 
 
-CUDA_VISIBLE_DEVICES=0 python eval/lol/${PY_FILE}.py \
+CUDA_VISIBLE_DEVICES=4 python eval/lol/${PY_FILE}.py \
     --ckpt_path /hhd3/ld/checkpoint/ckpt_Painter/painter_vit_large.pth \
     --attack_id ${ATTACK_ID} \
     --epsilon ${EPSILON} \
