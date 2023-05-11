@@ -91,8 +91,12 @@ def get_args_parser():
     parser.add_argument('--save', action='store_true', help='save predictions',
                         default=False)
     
-    parser.add_argument('--exp_id', type=str, default='POS_A_mask_A')
-    parser.add_argument('--transfer_img', type=str, default='animeGAN')
+    parser.add_argument('--exp_id', type=str, default='baseline')
+    parser.add_argument('--transfer_img_A', type=str, default='animeGAN')
+    parser.add_argument('--transfer_img_B', type=str, default='animeGAN')
+
+    parser.add_argument('--dst_dir', type=str, default='dst_dir')
+    parser.add_argument('--save_data_path', type=str, default='save_data_path')
 
     return parser.parse_args()
 
@@ -111,8 +115,7 @@ if __name__ == '__main__':
     ckpt_dir, ckpt_file = path_splits[-2], path_splits[-1]
     # dst_dir = os.path.join('/hhd3/ld/data/light_enhance/output', ckpt_dir.split('/')[-1],
     #                        "lol_inference_{}_{}".format(ckpt_file, os.path.basename(prompt).split(".")[0]))
-    dst_dir = os.path.join('/hhd3/ld/data/light_enhance/component_analysis/'
-                           "{}".format(args.exp_id))
+    dst_dir = args.dst_dir
     print(f'----------dst_dir: {dst_dir}----------')
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
@@ -143,10 +146,11 @@ if __name__ == '__main__':
     i = 0
     SEED = random.choice(np.arange(len(img_path_list)))
 
-    save_data_path = f'/hhd3/ld/data/Painter_root/lol_enhance/component_analysis/'
+    # save_data_path = f'/hhd3/ld/data/Painter_root/lol_enhance/component_analysis/'
+    save_data_path = args.save_data_path
     os.makedirs(save_data_path, exist_ok=True)
 
-    img2, tgt2 = get_prompt_gt(img2_path, tgt2_path, input_size, args.exp_id, args.transfer_img, task='lol_enhance')
+    img2, tgt2 = get_prompt_gt(img2_path, tgt2_path, input_size, args.exp_id, args.transfer_img_A, args.transfer_img_B, task='lol_enhance')
 
     psnr_val_rgb = []
     ssim_val_rgb = []
