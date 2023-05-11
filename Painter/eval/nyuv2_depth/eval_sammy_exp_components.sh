@@ -13,7 +13,6 @@
 # 4. format的重要性
 
 
-# bash eval/nyuv2_depth/eval_sammy_exp_components.sh 
 
 set -x
 
