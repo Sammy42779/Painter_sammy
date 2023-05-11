@@ -454,7 +454,7 @@ class Painter(nn.Module):
         if inds_ign.sum() > 0:
             valid[inds_ign] = 0.
 
-        mask = mask * valid
+        mask = mask * valid   ## [1,3,896,448]  mask[:,:,:448,:]均为0, mask[:,:,448:,:]均为1, valid全为1
 
         target = tgts
         if self.loss_func == "l1l2":
