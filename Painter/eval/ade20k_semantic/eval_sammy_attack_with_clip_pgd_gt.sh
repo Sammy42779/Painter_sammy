@@ -22,7 +22,7 @@
 # ATTACK_ID=attack_ABC
 # ATTACK_ID=none
 
-for ATTACK_ID in attack_A attack_B attack_C attack_AB attack_AC attack_BC attack_ABC none
+for ATTACK_ID in attack_C attack_AB attack_AC attack_BC attack_ABC none
 
 do
 
@@ -48,9 +48,9 @@ do
   SAVE_DATA_PATH="/hhd3/ld/painter_output/${TASK}/${EXP}/${ATTACK}${STEP}_${EPSILON}/${ATTACK_ID}/save_data/"
 
 
-  NUM_GPUS=1
+  NUM_GPUS=4
   # inference
-  CUDA_VISIBLE_DEVICES=5 python -m torch.distributed.launch --nproc_per_node=${NUM_GPUS} --master_port=1998 --use_env \
+  CUDA_VISIBLE_DEVICES=0,1,5,6 python -m torch.distributed.launch --nproc_per_node=${NUM_GPUS} --master_port=1998 --use_env \
     eval/ade20k_semantic/painter_inference_segm_attack_gt_baseline.py \
     --model ${MODEL} --prompt ${PROMPT} \
     --ckpt_path ${CKPT_PATH} --input_size ${SIZE} \
@@ -63,7 +63,7 @@ do
 
 
   # postprocessing and eval
-  CUDA_VISIBLE_DEVICES=5 python eval/ade20k_semantic/ADE20kSemSegEvaluatorCustom.py \
+  CUDA_VISIBLE_DEVICES=0 python eval/ade20k_semantic/ADE20kSemSegEvaluatorCustom.py \
     --pred_dir ${DST_DIR}
 
 done
