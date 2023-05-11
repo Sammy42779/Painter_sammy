@@ -37,8 +37,10 @@ CKPT_PATH="/hhd3/ld/checkpoint/ckpt_Painter/painter_vit_large.pth"
 # DST_DIR="/hhd3/ld/data/nyu_depth_v2/reimp_${ATTACK}${STEP}_${EPSILON}/${ATTACK_ID}_1/"
 # SAVE_DATA_PATH="/hhd3/ld/data/Painter_root/nyu_depth/reimp_${ATTACK}${STEP}_${EPSILON}/${ATTACK_ID}_1/"
 
-DST_DIR="/hhd3/ld/data/${TASK}/${METHOD}/${ATTACK}${STEP}_${EPSILON}/${ATTACK_ID}/"
-SAVE_DATA_PATH="/hhd3/ld/data/Painter_root/${SAVE_TASK}/${METHOD}/${ATTACK}${STEP}_${EPSILON}/${ATTACK_ID}/"
+i=1
+
+DST_DIR="/hhd3/ld/data/${TASK}/${METHOD}/${ATTACK}${STEP}_${EPSILON}/${ATTACK_ID}_${i}/"
+SAVE_DATA_PATH="/hhd3/ld/data/Painter_root/${SAVE_TASK}/${METHOD}/${ATTACK}${STEP}_${EPSILON}/${ATTACK_ID}_${i}/"
 
 
 
