@@ -57,7 +57,7 @@ def load_other_tgt(tgt_path, input_size):
     return tgt2
  
 
-def get_prompt_gt(img2_path, tgt2_path, input_size, exp_id, transfer_img=None, task=None):
+def get_prompt_gt(img2_path, tgt2_path, input_size, exp_id, transfer_img_A=None, transfer_img_B=None, task=None):
 
     BLANK_IMG = np.zeros((input_size, input_size, 3), dtype=np.float64)
     WHITE_IMG = np.ones((input_size, input_size, 3), dtype=np.uint8) * 255
@@ -147,15 +147,18 @@ def get_prompt_gt(img2_path, tgt2_path, input_size, exp_id, transfer_img=None, t
     ########## ANIMEGAN A ##########
     elif exp_id == 'POS_A_animeGAN_A': ## animeGAN_A
         # 将图A替换为animeGAN的图像 语义保留, 但是out-of-domain
-        img2 = load_origin_img(transfer_img, input_size)
+        img2 = load_origin_img(transfer_img_A, input_size)
         tgt2 = load_origin_tgt(tgt2_path, input_size, task=task)
 
     ########## ANIMEGAN B ##########
     elif 'POS_B_animeGAN_B' in exp_id: ## animeGAN_B
         # 将图B替换为animeGAN的图像 语义保留, 但是out-of-domain
         img2 = load_origin_img(img2_path, input_size)
-        tgt2 = load_other_tgt(transfer_img, input_size)
+        tgt2 = load_other_tgt(transfer_img_B, input_size)
 
+    elif exp_id == 'POS_AB_animeGAN_AB':
+        img2 = load_origin_img(transfer_img_A, input_size)
+        tgt2 = load_other_tgt(transfer_img_B, input_size)
 
     elif exp_id == 'POS_B_random_B_other_task_Flickr':
         # 将图B替换为其他任务随机ground-truth, 不是prompt原始配对的gt

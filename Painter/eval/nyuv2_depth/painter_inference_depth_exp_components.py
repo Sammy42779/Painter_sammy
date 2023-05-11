@@ -92,8 +92,14 @@ def get_args_parser():
     parser.add_argument('--prompt', type=str, help='prompt image in train set',
                         default='study_room_0005b/rgb_00094')
     parser.add_argument('--input_size', type=int, default=448)
-    parser.add_argument('--exp_id', type=str, default='exp_mapping_1_1_a')
-    parser.add_argument('--transfer_img', type=str, default='animeGAN')
+    
+    parser.add_argument('--exp_id', type=str, default='baseline')
+    parser.add_argument('--transfer_img_A', type=str, default='animeGAN')
+    parser.add_argument('--transfer_img_B', type=str, default='animeGAN')
+
+    parser.add_argument('--dst_dir', type=str, default='dst_dir')
+    parser.add_argument('--save_data_path', type=str, default='save_data_path')
+
     return parser.parse_args()
 
 
@@ -113,8 +119,9 @@ if __name__ == '__main__':
 
     ## ## change based on the server
     ## 108: /data1/; 110: /hhd3/
-    dst_dir = os.path.join('/hhd3/ld/data/nyu_depth_v2/component_analysis/'
-                           "nyuv2_depth_inference_{}_{}_{}/".format(ckpt_file, args.prompt, args.exp_id))
+    # dst_dir = os.path.join('/hhd3/ld/data/nyu_depth_v2/component_analysis/'
+    #                        "nyuv2_depth_inference_{}_{}_{}/".format(ckpt_file, args.prompt, args.exp_id))
+    dst_dir = args.dst_dir
     print(f'----------dst_dir: {dst_dir}----------')
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
@@ -130,14 +137,15 @@ if __name__ == '__main__':
     修改prompt, 即 A B 图
     """
     input_size = args.input_size
-    img2, tgt2 = get_prompt_gt(img2_path, tgt2_path, input_size, args.exp_id, args.transfer_img, task='nyu_depth')
+    img2, tgt2 = get_prompt_gt(img2_path, tgt2_path, input_size, args.exp_id, args.transfer_img_A, args.transfer_img_B, task='nyu_depth')
 
     res, hres = args.input_size, args.input_size
 
     i = 0
     SEED = random.choice(np.arange(len(img_path_list)))
 
-    save_data_path = f'/hhd3/ld/data/Painter_root/nyu_depth/component_analysis/'
+    # save_data_path = f'/hhd3/ld/data/Painter_root/nyu_depth/component_analysis/'
+    save_data_path = args.save_data_path
     os.makedirs(save_data_path, exist_ok=True)
 
     for img_path in tqdm.tqdm(img_path_list):

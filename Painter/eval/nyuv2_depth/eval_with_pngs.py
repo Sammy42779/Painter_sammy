@@ -215,6 +215,16 @@ def eval(pred_depths):
     print("{:7.3f}, {:7.3f}, {:7.3f}, {:7.3f}, {:7.3f}, {:7.3f}, {:7.3f}, {:7.3f}, {:7.3f}".format(
         d1.mean(), d2.mean(), d3.mean(),
         abs_rel.mean(), sq_rel.mean(), rms.mean(), log_rms.mean(), silog.mean(), log10.mean()))
+    
+    parent_dir = os.path.dirname(os.path.abspath(args.pred_path))
+    result_file = os.path.join(parent_dir, "results.txt")
+    print("writing to {}".format(result_file))
+    with open(result_file, 'w') as f:
+        print("{:>7}, {:>7}, {:>7}, {:>7}, {:>7}, {:>7}, {:>7}, {:>7}, {:>7}".format(
+        'd1', 'd2', 'd3', 'AbsRel', 'SqRel', 'RMSE', 'RMSElog', 'SILog', 'log10'), file=f)
+        print("{:7.3f}, {:7.3f}, {:7.3f}, {:7.3f}, {:7.3f}, {:7.3f}, {:7.3f}, {:7.3f}, {:7.3f}".format(
+        d1.mean(), d2.mean(), d3.mean(),
+        abs_rel.mean(), sq_rel.mean(), rms.mean(), log_rms.mean(), silog.mean(), log10.mean()), file=f)
 
     return silog, log10, abs_rel, sq_rel, rms, log_rms, d1, d2, d3
 
