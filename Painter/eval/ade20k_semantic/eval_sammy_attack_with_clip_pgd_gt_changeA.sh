@@ -43,7 +43,7 @@ do
   CKPT_PATH="/hhd3/ld/checkpoint/ckpt_Painter/painter_vit_large.pth"
 
   TASK=ade20k
-  EXP=attack_baseline
+  EXP=attack_baseline_changeA
   DST_DIR="/hhd3/ld/painter_output/${TASK}/${EXP}/${ATTACK}${STEP}_${EPSILON}/${ATTACK_ID}/output/"
   SAVE_DATA_PATH="/hhd3/ld/painter_output/${TASK}/${EXP}/${ATTACK}${STEP}_${EPSILON}/${ATTACK_ID}/save_data/"
 
@@ -51,7 +51,7 @@ do
   NUM_GPUS=1
   # inference
   CUDA_VISIBLE_DEVICES=5 python -m torch.distributed.launch --nproc_per_node=${NUM_GPUS} --master_port=1998 --use_env \
-    eval/ade20k_semantic/painter_inference_segm_attack_gt_baseline.py \
+    eval/ade20k_semantic/painter_inference_segm_attack_gt_baseline_changeA.py \
     --model ${MODEL} --prompt ${PROMPT} \
     --ckpt_path ${CKPT_PATH} --input_size ${SIZE} \
     --attack_id ${ATTACK_ID} \
@@ -68,4 +68,4 @@ do
 
 done
 
-# bash eval/ade20k_semantic/eval_sammy_attack_with_clip_pgd_gt.sh
+# bash eval/ade20k_semantic/eval_sammy_attack_with_clip_pgd_gt_changeA.sh
