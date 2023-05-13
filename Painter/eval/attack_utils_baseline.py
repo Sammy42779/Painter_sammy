@@ -28,6 +28,7 @@ def construct_adv_A_pgd(img, tgt, model, device, epsilon, num_steps, step_size, 
     bool_masked_pos = bool_masked_pos.flatten(1).to(torch.bool)   # 变成True/False
 
     for _ in range(num_steps): 
+        model.zero_grad()
         x_adv.requires_grad_()  
         latent_adv = model.forward_encoder(images_normalize(x_adv).float().to(device), images_normalize(tgt).float().to(device), bool_masked_pos.to(device))
         pred_adv = model.forward_decoder(latent_adv)
@@ -98,6 +99,10 @@ def construct_adv_B_pgd(img, tgt, model, device, epsilon, num_steps, step_size, 
 
 def construct_adv_C_pgd(img, tgt, model, device, epsilon, num_steps, step_size, rand_init='rand', mask_B=False, ignore_D_loss=False):
 
+    # print(f'mask_B: {mask_B}, ignore_D_loss: {ignore_D_loss}')
+
+    ## ignore_D_loss: 只算D的loss
+
     model.eval()
 
     x = reshape(img)
@@ -115,22 +120,34 @@ def construct_adv_C_pgd(img, tgt, model, device, epsilon, num_steps, step_size, 
 
     x_adv.requires_grad_()
 
-    bool_masked_pos = get_masked_pos(model, mask_B=mask_B, mask_ratio=0.75) # wt
+    bool_masked_pos_basic = get_masked_pos(model, mask_B=False, mask_ratio=0.75) # wt
+    bool_masked_pos_B = get_masked_pos(model, mask_B=mask_B, mask_ratio=0.75) # wt
+
     valid = torch.ones_like(tgt)
 
     if isinstance(model, torch.nn.parallel.DistributedDataParallel):
         model = model.module
     
-    bool_masked_pos = bool_masked_pos.flatten(1).to(torch.bool)   # 变成True/False
+    bool_masked_pos_basic = bool_masked_pos_basic.flatten(1).to(torch.bool)   # 变成True/False
+    bool_masked_pos_B = bool_masked_pos_B.flatten(1).to(torch.bool)   # 变成True/False
 
     for i in range(num_steps): 
+        model.zero_grad()
         x_adv.requires_grad_()
-        latent_adv = model.forward_encoder(images_normalize(x_adv).float().to(device), images_normalize(tgt).float().to(device), bool_masked_pos.to(device))
+        latent_adv = model.forward_encoder(images_normalize(x_adv).float().to(device), images_normalize(tgt).float().to(device), bool_masked_pos_basic.to(device))
         pred_adv = model.forward_decoder(latent_adv)
         latent_adv = torch.cat(latent_adv, dim=-1)
+        # 原始loss  D loss
+        loss = model.forward_loss(pred_adv, images_normalize(tgt).float().to(device), bool_masked_pos_basic.to(device), valid.to(device))
 
-        loss = model.forward_loss(pred_adv, images_normalize(tgt).float().to(device), bool_masked_pos.to(device), valid.to(device), ignore_D_loss=ignore_D_loss)  # wt
-        # print(loss)
+        # 把B mask后得到的变量
+        mask_B_latent = model.forward_encoder(images_normalize(x_adv).float().to(device), images_normalize(tgt).float().to(device), bool_masked_pos_B.to(device))
+        mask_B_pred = model.forward_decoder(mask_B_latent)
+        # mask loss
+        loss_mask = model.forward_loss(mask_B_pred, images_normalize(tgt).float().to(device), bool_masked_pos_B.to(device), valid.to(device), ignore_D_loss=ignore_D_loss)  # wt
+        
+        # print(loss, loss_mask)
+        loss = loss + loss_mask 
         loss.backward()
 
         grad_sign = x_adv.grad.detach().sign()
@@ -781,7 +798,7 @@ def construct_adv_ABC_fgsm(img, tgt, model, device, alpha=0.031, rand_init=True)
 
 
     
-def get_adv_img_adv_tgt_baseline(img, tgt, model_painter, device, attack_id, attack_method, epsilon, num_steps):
+def get_adv_img_adv_tgt_baseline(img, tgt, model_painter, device, attack_id, attack_method, epsilon, num_steps, mask_B, ignore_D_loss):
     if attack_id == 'attack_A':
         if attack_method == 'FGSM':
             adv_img, adv_tgt = construct_adv_A_fgsm(img, tgt, model_painter, device, alpha=epsilon/255., rand_init=True)
@@ -796,7 +813,7 @@ def get_adv_img_adv_tgt_baseline(img, tgt, model_painter, device, attack_id, att
         if attack_method == 'FGSM':
             adv_img, adv_tgt = construct_adv_C_fgsm(img, tgt, model_painter, device, alpha=epsilon/255., rand_init=True)
         elif attack_method == 'PGD':
-            adv_img, adv_tgt = construct_adv_C_pgd(img, tgt, model_painter, device, epsilon=epsilon/255., num_steps=num_steps, step_size=2/255, rand_init='rand')
+            adv_img, adv_tgt = construct_adv_C_pgd(img, tgt, model_painter, device, epsilon=epsilon/255., num_steps=num_steps, step_size=2/255, rand_init='rand', mask_B=mask_B, ignore_D_loss=ignore_D_loss)
     elif attack_id == 'attack_AB':
         if attack_method == 'FGSM':
             adv_img, adv_tgt = construct_adv_AB_fgsm(img, tgt, model_painter, device, alpha=epsilon/255., rand_init=True)
