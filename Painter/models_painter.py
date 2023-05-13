@@ -487,13 +487,16 @@ class Painter(nn.Module):
         x = self.decoder_pred(x) # Bx3xHxW  [1,3,896,448] 3是RGB通道
         return x
 
-    def forward_loss(self, pred, tgts, mask, valid):
+    def forward_loss(self, pred, tgts, mask, valid, ignore_D_loss=False):
         """
         tgts: [N, 3, H, W]
         pred: [N, 3, H, W]
         mask: [N, L], 0 is keep, 1 is remove, 
         valid: [N, 3, H, W]
         """
+        if ignore_D_loss: # wt
+            mask[:, mask.shape[1]//2:] = False
+            
         mask = mask[:, :, None].repeat(1, 1, self.patch_size**2 * 3)
         mask = self.unpatchify(mask)
 

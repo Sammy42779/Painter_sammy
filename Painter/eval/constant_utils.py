@@ -31,8 +31,23 @@ def reshape(input):
     return out
 
 
+def get_random_mask_B(model, bool_masked_pos, mask_ratio=0.75): # wt
+    patch_size = model.patch_size
+    input_size = (448, 448)
+    print("Patch size = %s" % str(patch_size))
+    window_size = (input_size[0] // patch_size, input_size[1] // patch_size)
+    from util.masking_generator import MaskingGenerator
+    masked_position_generator = MaskingGenerator(
+        window_size, num_masking_patches= int(784 * mask_ratio),
+        max_num_patches=None,
+        min_num_patches=16,
+    )
+    mask = masked_position_generator()
+    bool_masked_pos[:, :bool_masked_pos.shape[1]//2] = torch.from_numpy(mask.reshape(1, -1))
+    return bool_masked_pos
 
-def get_masked_pos(model):
+
+def get_masked_pos(model , mask_B=False, mask_ratio=0.75):
 
     if isinstance(model, torch.nn.parallel.DistributedDataParallel):
         model = model.module
@@ -42,6 +57,7 @@ def get_masked_pos(model):
     bool_masked_pos = torch.zeros(model.patch_embed.num_patches)  
     bool_masked_pos[model.patch_embed.num_patches//2:] = 1
     bool_masked_pos = bool_masked_pos.unsqueeze(dim=0)
+    bool_masked_pos = get_random_mask_B(model, bool_masked_pos, mask_ratio) if mask_B else bool_masked_pos # wt 
     
     return bool_masked_pos
 

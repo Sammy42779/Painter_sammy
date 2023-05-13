@@ -96,7 +96,7 @@ def construct_adv_B_pgd(img, tgt, model, device, epsilon, num_steps, step_size, 
 
 
 
-def construct_adv_C_pgd(img, tgt, model, device, epsilon, num_steps, step_size, rand_init='rand'):
+def construct_adv_C_pgd(img, tgt, model, device, epsilon, num_steps, step_size, rand_init='rand', mask_B=False, ignore_D_loss=False):
 
     model.eval()
 
@@ -115,7 +115,7 @@ def construct_adv_C_pgd(img, tgt, model, device, epsilon, num_steps, step_size, 
 
     x_adv.requires_grad_()
 
-    bool_masked_pos = get_masked_pos(model)
+    bool_masked_pos = get_masked_pos(model, mask_B=mask_B, mask_ratio=0.75) # wt
     valid = torch.ones_like(tgt)
 
     if isinstance(model, torch.nn.parallel.DistributedDataParallel):
@@ -129,7 +129,7 @@ def construct_adv_C_pgd(img, tgt, model, device, epsilon, num_steps, step_size, 
         pred_adv = model.forward_decoder(latent_adv)
         latent_adv = torch.cat(latent_adv, dim=-1)
 
-        loss = model.forward_loss(pred_adv, images_normalize(tgt).float().to(device), bool_masked_pos.to(device), valid.to(device))  ## 1.2999
+        loss = model.forward_loss(pred_adv, images_normalize(tgt).float().to(device), bool_masked_pos.to(device), valid.to(device), ignore_D_loss=ignore_D_loss)  # wt
         # print(loss)
         loss.backward()
 
