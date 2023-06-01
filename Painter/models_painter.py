@@ -382,6 +382,7 @@ class Painter(nn.Module):
         imgs = x.reshape(shape=(x.shape[0], 3, h * p, w * p))
         return imgs
 
+
     def forward_encoder(self, imgs, tgts, bool_masked_pos):  # img=[1,3,896,448], tgts=[1,3,896,448]
         # embed patches, 初始化的embed_dim=1024, 没有通道信息: 将输入图像分割成大小相等的patches, 然后将这些子块嵌入到一个更低维的表示中, 应该是变成一长条patch序列, 每个patch由n维向量表示
         x = self.patch_embed(imgs)   # [1,56,28,1024] B C H W -> B H W C
@@ -404,14 +405,7 @@ class Painter(nn.Module):
             y = y + get_abs_pos(
                 self.pos_embed, self.pretrain_use_cls_token, (y.shape[1], y.shape[2])
             )
-        """
-        %%%%%%%%%%%%%在这之上是在构建输入的x和y数据样式
-        那么应该在这之后进行对抗样本的构建
-        1. 对抗样本不能先norm,因为对抗样本的范围在0-1之间
-            1.1 需要先生成数据形式,然后再进行norm用于后面ViT提取特征
-        2. mask_token, segment_token, position_embed都不能添加扰动, 只能是原始图像上加扰动
-            2.1 那么创建对抗样本的位置需要改变, 不在这里
-        """
+
         merge_idx = 2
         x = torch.cat((x, y), dim=0)  # 按batch_size维度拼接, [2,56,28,1024]
         # apply Transformer blocks
@@ -423,6 +417,7 @@ class Painter(nn.Module):
             if idx in [5, 11, 17, 23]:
                 out.append(self.norm(x))
         return out  # idx=5,11,17,23时, 保留这几层的输出
+
 
     def forward_encoder_ac(self, imgs, tgts, bool_masked_pos):  # img=[1,3,896,448], tgts=[1,3,896,448]
         # embed patches, 初始化的embed_dim=1024, 没有通道信息: 将输入图像分割成大小相等的patches, 然后将这些子块嵌入到一个更低维的表示中, 应该是变成一长条patch序列, 每个patch由n维向量表示
@@ -449,14 +444,7 @@ class Painter(nn.Module):
             y = y + get_abs_pos(
                 self.pos_embed, self.pretrain_use_cls_token, (y.shape[1], y.shape[2])
             )
-        """
-        %%%%%%%%%%%%%在这之上是在构建输入的x和y数据样式
-        那么应该在这之后进行对抗样本的构建
-        1. 对抗样本不能先norm,因为对抗样本的范围在0-1之间
-            1.1 需要先生成数据形式,然后再进行norm用于后面ViT提取特征
-        2. mask_token, segment_token, position_embed都不能添加扰动, 只能是原始图像上加扰动
-            2.1 那么创建对抗样本的位置需要改变, 不在这里
-        """
+
         merge_idx = 2
         x = torch.cat((x, y), dim=0)  # 按batch_size维度拼接, [2,56,28,1024]
         x = x.reshape(x.shape[0], 2, Hp//2, Wp, x.shape[-1]) #[col=2, row=2, h=28, w=28, C=1024]
@@ -474,6 +462,7 @@ class Painter(nn.Module):
         out_c = torch.cat([_[1] for _ in out])
         return out_a, out_c  # idx=5,11,17,23时, 保留这几层的输出
 
+
     def forward_decoder(self, x):  
         # predictor projection  解码器的前向传播, 将编码器提取的特征映射回原始图像空间
         x = torch.cat(x, dim=-1)  # 按最后一个维度拼接 4个[1,56,28,1024] -> [1,56,28,1024*4]
@@ -486,6 +475,7 @@ class Painter(nn.Module):
  
         x = self.decoder_pred(x) # Bx3xHxW  [1,3,896,448] 3是RGB通道
         return x
+
 
     def forward_loss(self, pred, tgts, mask, valid, ignore_D_loss=False):
         """
@@ -520,6 +510,7 @@ class Painter(nn.Module):
             loss = F.smooth_l1_loss(pred, target, reduction="none", beta=0.01)
         loss = (loss * mask).sum() / (mask.sum() + 1e-2)  # mean loss on removed patches  只考虑D图的loss
         return loss
+
 
     def forward(self, imgs, tgts, bool_masked_pos=None, valid=None):
         if bool_masked_pos is None:

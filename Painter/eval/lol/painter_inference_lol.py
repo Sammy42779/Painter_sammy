@@ -29,6 +29,11 @@ import models_painter
 from skimage.metrics import peak_signal_noise_ratio as psnr_loss
 from skimage.metrics import structural_similarity as ssim_loss
 
+sys.path.append('/ssd1/ld/ICCV2023/Painter_sammy/Painter/eval')
+from constant_utils import *
+from demonstration_utils import *
+
+import ADA_utils
 
 imagenet_mean = np.array([0.485, 0.456, 0.406])
 imagenet_std = np.array([0.229, 0.224, 0.225])
@@ -58,7 +63,7 @@ def run_one_image(img, tgt, size, model, out_path, device):
     bool_masked_pos = bool_masked_pos.unsqueeze(dim=0)
 
     valid = torch.ones_like(tgt)
-    loss, y, mask = model(x.float().to(device), tgt.float().to(device), bool_masked_pos.to(device), valid.float().to(device))
+    loss, y, mask = model(images_normalize(x).float().to(device), images_normalize(tgt).float().to(device), bool_masked_pos.to(device), valid.float().to(device))
     y = model.unpatchify(y)
     y = torch.einsum('nchw->nhwc', y).detach().cpu()
 
@@ -87,13 +92,53 @@ def get_args_parser():
     parser.add_argument('--input_size', type=int, default=448)
     parser.add_argument('--save', action='store_true', help='save predictions',
                         default=False)
+    
+    parser.add_argument('--task', type=str, default='lol_enhance')
+    parser.add_argument('--exp', type=str, default='Attack_VA', help='Baseline, Demonstration, Attack_VA(vanilla), Attack_AA(alignment), Attack_DA(distribution), Attack_ADA')
+    parser.add_argument('--dst_dir', type=str, default='/ssd1/ld/ICCV2023/Painter_sammy/debug/dst_dir')
+    parser.add_argument('--save_data_path', type=str, default='/ssd1/ld/ICCV2023/Painter_sammy/debug/save_data_path')
+    parser.add_argument('--exp_id', type=str, default='attack_A', help='Demonstration: POS_exp, Attack: attack_POS')
+
+    parser.add_argument('--style_change_A', type=str, default='animeGAN')
+    parser.add_argument('--style_change_B', type=str, default='animeGAN')
+    parser.add_argument('--save_demon', action='store_true', help='save demonstration data',
+                        default=False)
+
+    parser.add_argument('--random_A', action='store_true', help='random A (OOD) content and then attack vp',
+                        default=False)
+    parser.add_argument('--random_B', action='store_true', help='random B (ID) content and then attack vp',
+                        default=False)
+    parser.add_argument('--attack_method', type=str, default='PGD')
+    parser.add_argument('--epsilon', default=8, type=int,
+                        help='max perturbation (default: 8), need to divide by 255')
+    parser.add_argument('--num_steps', default=10, type=int)
+
+    parser.add_argument('--break_AC', action='store_true', help='Distribution Attack',
+                        default=False)
+    parser.add_argument('--lam_AC', default=0.01, type=float)
+    parser.add_argument('--with_B', action='store_true', help='use B to get feat_a and feat_c',
+                        default=False)
+
+    parser.add_argument('--mask_B', action='store_true', help='Alignment Attack',
+                        default=False)
+    parser.add_argument('--ignore_D_loss', action='store_true', help='ignore D loss',
+                        default=False)
+    parser.add_argument('--lam_AB', default=0.1, type=float)
+    parser.add_argument('--mask_ratio', default=0.75, type=float)
+
+    parser.add_argument('--save_adv', action='store_true', help='save adversarial data',
+                        default=False)
+
+    parser.add_argument('--seed', type=int, default=0)
+
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     args = get_args_parser()
 
-    os.environ['CUDA_VISIBLE_DEVICES'] = '5'
+    # make random mask reproducible (comment out to make it change)
+    set_seed(args.seed)
 
     ckpt_path = args.ckpt_path
     model = args.model
@@ -102,8 +147,10 @@ if __name__ == '__main__':
 
     path_splits = ckpt_path.split('/')
     ckpt_dir, ckpt_file = path_splits[-2], path_splits[-1]
-    dst_dir = os.path.join('/hhd3/ld/data/light_enhance/output', ckpt_dir.split('/')[-1],
-                           "lol_inference_{}_{}".format(ckpt_file, os.path.basename(prompt).split(".")[0]))
+    # dst_dir = os.path.join('models_inference', ckpt_dir.split('/')[-1],
+    #                        "lol_inference_{}_{}".format(ckpt_file, os.path.basename(prompt).split(".")[0]))
+    dst_dir = args.dst_dir
+    print(f'----------dst_dir: {dst_dir}----------')
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
     print("output_dir: {}".format(dst_dir))
@@ -119,20 +166,36 @@ if __name__ == '__main__':
 
     img2_path = "/hhd3/ld/data/light_enhance/our485/low/{}.png".format(prompt)
     tgt2_path = "/hhd3/ld/data/light_enhance/our485/high/{}.png".format(prompt)
+    if args.random_A:
+        img2_path = random.choice(COCO_LIST_B)
+    if args.random_B:
+        tgt2_path = random.choice(LOL_LIST_B)
     print('prompt: {}'.format(tgt2_path))
 
     # load the shared prompt image pair
-    img2 = Image.open(img2_path).convert("RGB")
-    img2 = img2.resize((input_size, input_size))
-    img2 = np.array(img2) / 255.
+    if args.exp == 'Demonstration':
+        img2, tgt2 = get_prompt_gt(img2_path, tgt2_path, input_size, 
+                                   args.exp_id, args.style_change_A, args.style_change_B, task=args.task)
+    else:  # Baseline or Attack
+        img2 = Image.open(img2_path).convert("RGB")
+        img2 = img2.resize((input_size, input_size))
+        img2 = np.array(img2) / 255.
 
-    tgt2 = Image.open(tgt2_path)
-    tgt2 = tgt2.resize((input_size, input_size))
-    tgt2 = np.array(tgt2) / 255.
+        tgt2 = Image.open(tgt2_path)
+        tgt2 = tgt2.resize((input_size, input_size))
+        tgt2 = np.array(tgt2) / 255.
 
     psnr_val_rgb = []
     ssim_val_rgb = []
     model_painter.eval()
+
+    if args.save_adv or args.save_demon:
+        i = 0
+        SEED = random.choice(np.arange(len(img_path_list)))
+
+        save_data_path = args.save_data_path
+        os.makedirs(save_data_path, exist_ok=True)
+
     for img_path in tqdm.tqdm(img_path_list):
         """ Load an image """
         img_name = os.path.basename(img_path)
@@ -149,21 +212,48 @@ if __name__ == '__main__':
         img = np.concatenate((img2, img), axis=0)
         assert img.shape == (input_size * 2, input_size, 3)
         # normalize by ImageNet mean and std
-        img = img - imagenet_mean
-        img = img / imagenet_std
+        # img = img - imagenet_mean
+        # img = img / imagenet_std
 
-        tgt = tgt2  # tgt is not available
+        """传进ground truth"""
+        gt_tgt = Image.open(img_path.replace('low', 'high')).convert("RGB") 
+        gt_tgt = gt_tgt.resize((input_size, input_size))
+        gt_tgt = np.array(gt_tgt) / 255.
+
+        # tgt = tgt2  # tgt is not available
+        tgt = gt_tgt
         tgt = np.concatenate((tgt2, tgt), axis=0)
 
         assert tgt.shape == (input_size * 2, input_size, 3)
         # normalize by ImageNet mean and std
-        tgt = tgt - imagenet_mean
-        tgt = tgt / imagenet_std
+        # tgt = tgt - imagenet_mean
+        # tgt = tgt / imagenet_std
 
         # make random mask reproducible (comment out to make it change)
-        torch.manual_seed(2)
+        # torch.manual_seed(2)
 
-        output = run_one_image(img, tgt, size, model_painter, out_path, device)
+        if 'Attack' in args.exp:
+            adv_img, adv_tgt = ADA_utils.construct_adv_PGD(img, tgt, model_painter, device, 
+                                        epsilon=args.epsilon/255., num_steps=args.num_steps, step_size=2/255.,
+                                        exp_method=args.exp, exp_pos=args.exp_id,
+                                        break_AC=args.break_AC, lam_AC=args.lam_AC, with_B=args.with_B,
+                                        mask_B=args.mask_B, ignore_D_loss=args.ignore_D_loss, lam_AB=args.lam_AB, mask_ratio=args.mask_ratio)
+        if args.save_demon or args.save_adv:
+            if i == SEED:
+                if args.save_demon:
+                    np.save(f'{save_data_path}/img2_demon.npy', img)
+                    np.save(f'{save_data_path}/tgt2_demon.npy', tgt)
+                elif args.save_adv:
+                    np.save(f'{save_data_path}/img2_prompt.npy', img)
+                    np.save(f'{save_data_path}/img2_prompt_adv.npy', adv_img)
+                    np.save(f'{save_data_path}/tgt2_prompt.npy', tgt)
+                    np.save(f'{save_data_path}/tgt2_prompt_adv.npy', adv_tgt)
+            i += 1
+
+        if 'Attack' in args.exp:
+            output = run_one_image(adv_img, adv_tgt, size, model_painter, out_path, device)
+        else:
+            output = run_one_image(img, tgt, size, model_painter, out_path, device)
         rgb_restored = output
         rgb_restored = np.clip(rgb_restored, 0, 1)
 
