@@ -29,7 +29,7 @@ DST_DIR="${OUT_PATH}/output/"
 SAVE_DATA_PATH="${OUT_PATH}/save_data/"
 
 # inference
-CUDA_VISIBLE_DEVICES=5 python painter_inference_depth.py \
+CUDA_VISIBLE_DEVICES=2 python painter_inference_depth.py \
   --ckpt_path ${CKPT_PATH} \
   --model ${MODEL} \
   --prompt ${PROMPT} \
@@ -43,7 +43,9 @@ CUDA_VISIBLE_DEVICES=5 python painter_inference_depth.py \
   --num_steps ${STEPS} \
   --save_adv 
 
-CUDA_VISIBLE_DEVICES=5 python eval_with_pngs.py \
+CUDA_VISIBLE_DEVICES=2 python eval_with_pngs.py \
   --pred_path ${DST_DIR} \
   --gt_path /hhd3/ld/data/nyu_depth_v2/official_splits/test/ \
   --dataset nyu --min_depth_eval 1e-3 --max_depth_eval 10 --eigen_crop
+
+done 
