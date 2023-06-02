@@ -137,6 +137,10 @@ def get_args_parser():
 if __name__ == '__main__':
     args = get_args_parser()
 
+    args_dict = vars(args)
+    with open(os.path.join(args.dst_dir, 'args.json'), 'w') as f:
+        json.dump(args_dict, f)
+
     # make random mask reproducible (comment out to make it change)
     set_seed(args.seed)
 

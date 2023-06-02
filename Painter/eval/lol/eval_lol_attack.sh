@@ -31,7 +31,35 @@ done
 
 
 
+## Attack_AA Alignment attack
+EXP=Attack_AA
+for EXP_ID in attack_A attack_B attack_C attack_AB attack_AC attack_BC attack_ABC
+do 
+# 
+OUT_PATH="/hhd3/ld/painter_sammy_output/${TASK}/${EXP}/${EXP_ID}/${ATTACK_METHOD}_eps${EPSILON}_steps${STEPS}/lamAB_${LAM_AB}/mask_ratio_${MASK_RATIO}"
 
+DST_DIR="${OUT_PATH}/output/"
+SAVE_DATA_PATH="${OUT_PATH}/save_data/"
+
+LAM_AB=0.1
+MASK_RATIO=0.75
+
+CUDA_VISIBLE_DEVICES=2 python painter_inference_lol.py \
+    --ckpt_path /hhd3/ld/checkpoint/ckpt_Painter/painter_vit_large.pth \
+    --task ${TASK} \
+    --exp ${EXP} \
+    --dst_dir ${DST_DIR} \
+    --save_data_path ${SAVE_DATA_PATH} \
+    --exp_id ${EXP_ID} \
+    --attack_method ${ATTACK_METHOD} \
+    --epsilon ${EPSILON} \
+    --num_steps ${STEPS} \
+    --mask_B \
+    --ignore_D_loss \
+    --lam_AB ${LAM_AB} \
+    --mask_ratio ${MASK_RATIO} \
+    --save_adv
+done 
 
 
 # LAM_AC=0.01

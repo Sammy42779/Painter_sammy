@@ -143,6 +143,10 @@ if __name__ == '__main__':
     args = ddp_utils.init_distributed_mode(args)
     device = torch.device("cuda")
 
+    args_dict = vars(args)
+    with open(os.path.join(args.dst_dir, 'args.json'), 'w') as f:
+        json.dump(args_dict, f)
+
     # make random mask reproducible (comment out to make it change)
     set_seed(args.seed)
 
