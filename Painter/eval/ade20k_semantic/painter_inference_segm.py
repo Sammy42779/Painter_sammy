@@ -144,8 +144,6 @@ if __name__ == '__main__':
     device = torch.device("cuda")
 
     args_dict = vars(args)
-    with open(os.path.join(args.dst_dir, 'args.json'), 'w') as f:
-        json.dump(args_dict, f)
 
     # make random mask reproducible (comment out to make it change)
     set_seed(args.seed)
@@ -165,6 +163,9 @@ if __name__ == '__main__':
         if not os.path.exists(dst_dir):
             os.makedirs(dst_dir)
         print("output_dir: {}".format(dst_dir))
+
+    with open(os.path.join(args.dst_dir, 'args.json'), 'w') as f:
+        json.dump(args_dict, f)
 
     model_painter = prepare_model(ckpt_path, model, args=args)
     print('Model loaded.')

@@ -135,8 +135,6 @@ if __name__ == '__main__':
     args = get_args_parser()
 
     args_dict = vars(args)
-    with open(os.path.join(args.dst_dir, 'args.json'), 'w') as f:
-        json.dump(args_dict, f)
 
     # make random mask reproducible (comment out to make it change)
     set_seed(args.seed)
@@ -158,6 +156,8 @@ if __name__ == '__main__':
     print(f'----------dst_dir: {dst_dir}----------')
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
+    with open(os.path.join(args.dst_dir, 'args.json'), 'w') as f:
+        json.dump(args_dict, f)
 
     img_src_dir = "/hhd3/ld/data/nyu_depth_v2/official_splits/test/"
     img_path_list = glob.glob(img_src_dir + "/*/rgb*g")
