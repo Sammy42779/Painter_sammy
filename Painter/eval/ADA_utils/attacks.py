@@ -115,13 +115,13 @@ def construct_adv_PGD(img, tgt, model, device, epsilon, num_steps, step_size, ra
             perturbation_x = step_size * grad_sign_x * pos_AC
             x_adv = x_adv.detach() + perturbation_x   # 已经没有梯度了, 不需要后期再对对抗样本梯度清零
             ### Clip the perturbations to epsilon
-            x_adv = torch.min(torch.max(x_adv, x - epsilon), x + epsilon)  # [检查] 对抗样本的范围是tgt还是x
+            x_adv = torch.min(torch.max(x_adv, x - epsilon), x + epsilon)
             x_adv = torch.clip(x_adv, 0.0, 1.0)   # L2 bound是指所有像素加起来不能超过budget, 而Linf bound是指每个像素的变化不能超过budget
         if exp_pos in ['attack_B', 'attack_AB', 'attack_BC', 'attack_ABC']:
             grad_sign_tgt = tgt_adv.grad.detach().sign()
             perturbation_tgt = step_size * grad_sign_tgt * pos_BD
             tgt_adv = tgt_adv.detach() + perturbation_tgt
-            tgt_adv = torch.min(torch.max(tgt_adv, tgt - epsilon), tgt + epsilon)  # [检查] 对抗样本的范围是tgt还是x
+            tgt_adv = torch.min(torch.max(tgt_adv, tgt - epsilon), tgt + epsilon) 
             tgt_adv = torch.clip(tgt_adv, 0.0, 1.0)   # L2 bound是指所有像素加起来不能超过budget, 而Linf bound是指每个像素的变化不能超过budget
 
     return reformat_output(x_adv, tgt_adv)
