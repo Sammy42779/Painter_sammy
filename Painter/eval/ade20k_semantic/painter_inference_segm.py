@@ -164,8 +164,11 @@ if __name__ == '__main__':
             os.makedirs(dst_dir)
         print("output_dir: {}".format(dst_dir))
 
-    with open(os.path.join(args.dst_dir, 'args.json'), 'w') as f:
-        json.dump(args_dict, f)
+        json_dir = os.path.join(args.dst_dir, 'args_file')
+        Path(json_dir).mkdir(parents=True, exist_ok=True)
+        json_file = os.path.join(json_dir, f'{args.exp_id}_args.json')
+        with open(json_file, 'w') as f:
+            json.dump(args_dict, f)
 
     model_painter = prepare_model(ckpt_path, model, args=args)
     print('Model loaded.')

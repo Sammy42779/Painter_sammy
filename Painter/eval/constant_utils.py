@@ -6,6 +6,7 @@ import torch.nn as nn
 import random
 import glob
 import json
+from pathlib import Path
 
 
 FLICKR_LIST = glob.glob('/hhd3/ld/data/flickr30k-images/*.jpg')
