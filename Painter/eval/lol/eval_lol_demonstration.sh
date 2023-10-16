@@ -13,7 +13,7 @@ OUT_PATH="/hhd3/ld/painter_sammy_output/${TASK}/${EXP}/${EXP_ID}"
 DST_DIR="${OUT_PATH}/output/"
 SAVE_DATA_PATH="${OUT_PATH}/save_data/"
 
-CUDA_VISIBLE_DEVICES=2 python painter_inference_lol.py \
+CUDA_VISIBLE_DEVICES=7 python painter_inference_lol.py \
     --ckpt_path /hhd3/ld/checkpoint/ckpt_Painter/painter_vit_large.pth \
     --task ${TASK} \
     --exp ${EXP} \

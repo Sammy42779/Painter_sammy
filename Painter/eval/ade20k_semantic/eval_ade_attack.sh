@@ -13,7 +13,7 @@ CKPT_PATH="/hhd3/ld/checkpoint/ckpt_Painter/painter_vit_large.pth"
 TASK=ade20k_segment
 
 ATTACK_METHOD=PGD
-EPSILON=8
+EPSILON=2
 STEPS=10
 
 
@@ -23,7 +23,8 @@ STEPS=10
 ## Attack_VA vanilla
 EXP=Attack_VA
 
-for EXP_ID in attack_A attack_B attack_C attack_AB attack_AC attack_BC attack_ABC
+# for EXP_ID in attack_ABC attack_C attack_AB attack_AC attack_BC attack_B
+for EXP_ID in attack_ABC attack_C attack_AB
 do 
 
 OUT_PATH="/hhd3/ld/painter_sammy_output/${TASK}/${EXP}/${EXP_ID}/${ATTACK_METHOD}_eps${EPSILON}_steps${STEPS}"
@@ -33,7 +34,7 @@ SAVE_DATA_PATH="${OUT_PATH}/save_data/"
 # inference
 NUM_GPUS=5
 PORT=29504
-CUDA_VISIBLE_DEVICES=2,5,6,7,8 python -m torch.distributed.launch --nproc_per_node=${NUM_GPUS} --master_port=${PORT} --use_env \
+CUDA_VISIBLE_DEVICES=0,3,4,5,6 python -m torch.distributed.launch --nproc_per_node=${NUM_GPUS} --master_port=${PORT} --use_env \
   painter_inference_segm.py \
   --model ${MODEL} --prompt ${PROMPT} \
   --ckpt_path ${CKPT_PATH} --input_size ${SIZE} \
@@ -50,7 +51,7 @@ CUDA_VISIBLE_DEVICES=2,5,6,7,8 python -m torch.distributed.launch --nproc_per_no
 done 
 
 
-for EXP_ID in attack_A attack_B attack_C attack_AB attack_AC attack_BC attack_ABC
+for EXP_ID in attack_C attack_AB attack_ABC
 do 
 
 OUT_PATH="/hhd3/ld/painter_sammy_output/${TASK}/${EXP}/${EXP_ID}/${ATTACK_METHOD}_eps${EPSILON}_steps${STEPS}"
@@ -58,6 +59,6 @@ DST_DIR="${OUT_PATH}/output/"
 SAVE_DATA_PATH="${OUT_PATH}/save_data/"
 
 # postprocessing and eval
-CUDA_VISIBLE_DEVICES=5 python ADE20kSemSegEvaluatorCustom.py \
+CUDA_VISIBLE_DEVICES=1 python ADE20kSemSegEvaluatorCustom.py \
   --pred_dir ${DST_DIR}
 done 

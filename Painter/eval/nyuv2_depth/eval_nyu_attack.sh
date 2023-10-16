@@ -12,7 +12,7 @@ CKPT_PATH="/hhd3/ld/checkpoint/ckpt_Painter/painter_vit_large.pth"
 TASK=nyu_depth
 
 ATTACK_METHOD=PGD
-EPSILON=8
+EPSILON=2
 STEPS=10
 
 # """ Attack_VA, Attack_AA, Attack_DA, Attack_ADA """
@@ -21,7 +21,8 @@ STEPS=10
 ## Attack_VA vanilla
 EXP=Attack_VA
 
-for EXP_ID in attack_A attack_B attack_C attack_AB attack_AC attack_BC attack_ABC
+# for EXP_ID in attack_A attack_B attack_C attack_AB attack_AC attack_BC attack_ABC
+for EXP_ID in attack_C attack_AB attack_ABC
 do 
 
 OUT_PATH="/hhd3/ld/painter_sammy_output/${TASK}/${EXP}/${EXP_ID}/${ATTACK_METHOD}_eps${EPSILON}_steps${STEPS}"
@@ -29,7 +30,7 @@ DST_DIR="${OUT_PATH}/output/"
 SAVE_DATA_PATH="${OUT_PATH}/save_data/"
 
 # inference
-CUDA_VISIBLE_DEVICES=2 python painter_inference_depth.py \
+CUDA_VISIBLE_DEVICES=0 python painter_inference_depth.py \
   --ckpt_path ${CKPT_PATH} \
   --model ${MODEL} \
   --prompt ${PROMPT} \
@@ -43,7 +44,7 @@ CUDA_VISIBLE_DEVICES=2 python painter_inference_depth.py \
   --num_steps ${STEPS} \
   --save_adv 
 
-CUDA_VISIBLE_DEVICES=2 python eval_with_pngs.py \
+CUDA_VISIBLE_DEVICES=0 python eval_with_pngs.py \
   --pred_path ${DST_DIR} \
   --gt_path /hhd3/ld/data/nyu_depth_v2/official_splits/test/ \
   --dataset nyu --min_depth_eval 1e-3 --max_depth_eval 10 --eigen_crop
