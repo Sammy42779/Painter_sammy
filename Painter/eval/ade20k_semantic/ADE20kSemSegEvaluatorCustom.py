@@ -150,6 +150,10 @@ if __name__ == '__main__':
     output_folder = os.path.join(pred_dir, 'eval_ade20k_{}'.format(suffix))
 
     print(f'----------output_folder: {output_folder}----------')
+    # path = os.path.join(output_folder, "results.txt")
+    num_files = len([f for f in os.listdir(pred_dir) if os.path.isfile(os.path.join(pred_dir, f))])
+    print(f'**************num_files: {num_files}**************')
+    assert num_files == 2000
 
     sys.path.append('/ssd1/ld/ICCV2023/Painter_sammy/Painter')
     from data.ade20k.gen_color_ade20k_sem import define_colors_per_location_mean_sep

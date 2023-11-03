@@ -78,6 +78,9 @@ def test():
     pred_filenames = []
 
     print(f'@@@@@@@@@@@@@ args.pred_path: {args.pred_path} @@@@@@@@@@@@@')
+    num_files = len([f for f in os.listdir(args.pred_path) if os.path.isfile(os.path.join(args.pred_path, f))])
+    print(f'@@@@@@@@@@@@@ num_files: {num_files} @@@@@@@@@@@@@')
+    assert num_files == 655
 
     for root, dirnames, filenames in os.walk(args.pred_path):
         for pred_filename in fnmatch.filter(filenames, '*.png'):
