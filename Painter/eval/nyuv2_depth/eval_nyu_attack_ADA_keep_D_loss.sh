@@ -19,18 +19,17 @@ STEPS=10
 
 
 ## Attack_AA Alignment attack: break AB --> mask_B
-D_LOSS=ignore_D_loss
 EXP=Attack_ADA
-for EXP_ID in attack_C
+for EXP_ID in attack_ABC  # attack_C attack_AB 
 do
     for LAM_AC in 0.001
     do
-        for LAM_AB in 0.01 0.001
+        for LAM_AB in 0.1 0.01 0.001
         do 
-            for MASK_RATIO in 0.75 
+            for MASK_RATIO in 0.1 
             do
 
-            OUT_PATH="/hhd3/ld/painter_sammy_output/${TASK}/${EXP}/${ATTACK_METHOD}_eps${EPSILON}_steps${STEPS}/${D_LOSS}/mask_ratio_${MASK_RATIO}/lamAB_${LAM_AB}/lamAC_${LAM_AC}/${EXP_ID}"
+            OUT_PATH="/hhd3/ld/painter_sammy_output/${TASK}/${EXP}/${ATTACK_METHOD}_eps${EPSILON}_steps${STEPS}/keep_D_loss/mask_ratio_${MASK_RATIO}/lamAB_${LAM_AB}/lamAC_${LAM_AC}/${EXP_ID}"
             DST_DIR="${OUT_PATH}/output/"
             SAVE_DATA_PATH="${OUT_PATH}/save_data/"
 
@@ -48,7 +47,6 @@ do
               --epsilon ${EPSILON} \
               --num_steps ${STEPS}  \
               --mask_B \
-              --ignore_D_loss \
               --lam_AB ${LAM_AB} \
               --mask_ratio ${MASK_RATIO} \
               --break_AC \

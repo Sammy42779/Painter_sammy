@@ -9,7 +9,7 @@ EXP=Attack_ADA
 
 for EXP_ID in attack_C attack_AB attack_ABC
 do
-    for LAM_AC in 0.1 0.01
+    for LAM_AC in 0.001
     do
         for LAM_AB in 0.1 0.01 0.001
         do 
@@ -20,7 +20,7 @@ do
             DST_DIR="${OUT_PATH}/output/"
             SAVE_DATA_PATH="${OUT_PATH}/save_data/"
 
-            CUDA_VISIBLE_DEVICES=5 python painter_inference_lol.py \
+            CUDA_VISIBLE_DEVICES=1 python painter_inference_lol.py \
                 --ckpt_path /hhd3/ld/checkpoint/ckpt_Painter/painter_vit_large.pth \
                 --task ${TASK} \
                 --exp ${EXP} \

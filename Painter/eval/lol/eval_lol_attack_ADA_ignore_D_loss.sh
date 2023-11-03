@@ -9,18 +9,18 @@ EXP=Attack_ADA
 
 for EXP_ID in attack_C attack_AB attack_ABC
 do
-    for LAM_AC in 0.1 0.01
+    for LAM_AC in 0.001 # 0.1 0.01
     do
-        for LAM_AB in 0.1 0.01 0.001
+        for LAM_AB in 0.1 0.01 0.001 # 0.01 0.001
         do 
-            for MASK_RATIO in 0.75 0.5 0.25 0.1
+            for MASK_RATIO in 0.75 0.5 0.25 0.1 # 0.75 0.5 0.25 0.1
             do
 
             OUT_PATH="/hhd3/ld/painter_sammy_output/${TASK}/${EXP}/${ATTACK_METHOD}_eps${EPSILON}_steps${STEPS}/ignore_D_loss/mask_ratio_${MASK_RATIO}/lamAB_${LAM_AB}/lamAC_${LAM_AC}/${EXP_ID}"
             DST_DIR="${OUT_PATH}/output/"
             SAVE_DATA_PATH="${OUT_PATH}/save_data/"
 
-            CUDA_VISIBLE_DEVICES=6 python painter_inference_lol.py \
+            CUDA_VISIBLE_DEVICES=5 python painter_inference_lol.py \
                 --ckpt_path /hhd3/ld/checkpoint/ckpt_Painter/painter_vit_large.pth \
                 --task ${TASK} \
                 --exp ${EXP} \

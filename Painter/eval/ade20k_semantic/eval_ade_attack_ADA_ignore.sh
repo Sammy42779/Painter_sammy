@@ -18,25 +18,25 @@ STEPS=10
 # """ Attack_VA, Attack_AA, Attack_DA, Attack_ADA """
 # ignore_D_loss
 EXP=Attack_ADA  
-
-for EXP_ID in attack_C attack_AB attack_ABC
+D_LOSS=ignore_D_loss
+for EXP_ID in attack_C
 do
-    for LAM_AC in 0.1 0.01 0.001
+    for LAM_AC in 0.1
     do
-        for LAM_AB in 0.1 0.01 0.001
+        for LAM_AB in 0.01
         do 
-            for MASK_RATIO in 0.75 0.5 0.25 0.1
+            for MASK_RATIO in 0.1
             do
 
-            OUT_PATH="/hhd3/ld/painter_sammy_output/${TASK}/${EXP}/${ATTACK_METHOD}_eps${EPSILON}_steps${STEPS}/ignore_D_loss/mask_ratio_${MASK_RATIO}/lamAB_${LAM_AB}/lamAC_${LAM_AC}/${EXP_ID}"
+            OUT_PATH="/hhd3/ld/painter_sammy_output/${TASK}/${EXP}/${ATTACK_METHOD}_eps${EPSILON}_steps${STEPS}/${D_LOSS}/mask_ratio_${MASK_RATIO}/lamAB_${LAM_AB}/lamAC_${LAM_AC}/${EXP_ID}"
             DST_DIR="${OUT_PATH}/output/"
             SAVE_DATA_PATH="${OUT_PATH}/save_data/"
 
 
             # inference
-            NUM_GPUS=1
-            PORT=29504
-            CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=${NUM_GPUS} --master_port=${PORT} --use_env \
+            NUM_GPUS=4
+            PORT=1999
+            CUDA_VISIBLE_DEVICES=1,2,3,8 python -m torch.distributed.launch --nproc_per_node=${NUM_GPUS} --master_port=${PORT} --use_env \
               painter_inference_segm.py \
               --model ${MODEL} --prompt ${PROMPT} \
               --ckpt_path ${CKPT_PATH} --input_size ${SIZE} \
@@ -61,24 +61,24 @@ do
     done 
 done           
 
-
-for EXP_ID in attack_C attack_AB attack_ABC
+D_LOSS=ignore_D_loss
+for EXP_ID in attack_C
 do
-    for LAM_AC in 0.1 0.01
+    for LAM_AC in 0.1
     do
-        for LAM_AB in 0.1 0.01 0.001
+        for LAM_AB in 0.01
         do 
-            for MASK_RATIO in 0.75 0.5 0.25 0.1
+            for MASK_RATIO in 0.1
             do
         
-            OUT_PATH="/hhd3/ld/painter_sammy_output/${TASK}/${EXP}/${ATTACK_METHOD}_eps${EPSILON}_steps${STEPS}/ignore_D_loss/mask_ratio_${MASK_RATIO}/lamAB_${LAM_AB}/lamAC_${LAM_AC}/${EXP_ID}"
+            OUT_PATH="/hhd3/ld/painter_sammy_output/${TASK}/${EXP}/${ATTACK_METHOD}_eps${EPSILON}_steps${STEPS}/${D_LOSS}/mask_ratio_${MASK_RATIO}/lamAB_${LAM_AB}/lamAC_${LAM_AC}/${EXP_ID}"
     
             DST_DIR="${OUT_PATH}/output/"
             SAVE_DATA_PATH="${OUT_PATH}/save_data/"
 
 
             # postprocessing and eval
-            CUDA_VISIBLE_DEVICES=0 python ADE20kSemSegEvaluatorCustom.py \
+            CUDA_VISIBLE_DEVICES=2 python ADE20kSemSegEvaluatorCustom.py \
                 --pred_dir ${DST_DIR}
             done
         done 
